@@ -272,7 +272,7 @@ export const AdminPanel = ({ onClose }: AdminPanelProps) => {
         <Label htmlFor="result">Resultado Final</Label>
         <Select 
           value={caseFormData.finalResult} 
-          onValueChange={(value) => setCaseFormData(prev => ({ ...prev, finalResult: value }))}
+          onValueChange={(value) => setCaseFormData(prev => ({ ...prev, finalResult: value as 'resuelto' | 'escalado' | 'sin_resolver' }))}
         >
           <SelectTrigger>
             <SelectValue placeholder="Seleccionar resultado" />

@@ -5,11 +5,13 @@ import { AdminPanel } from "@/components/AdminPanel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { searchProblems, TroubleshootingProblem } from "@/data/troubleshootingData";
+import { TroubleshootingProblem } from "@/data/troubleshootingData";
 import { Coffee, Monitor, Zap, Users, Settings } from "lucide-react";
 import nocHero from "@/assets/noc-hero.jpg";
+import { useNOCData } from "@/hooks/useNOCData";
 
 const Index = () => {
+  const { searchProblems, canEdit } = useNOCData();
   const [searchResults, setSearchResults] = useState<TroubleshootingProblem[]>([]);
   const [selectedProblem, setSelectedProblem] = useState<TroubleshootingProblem | null>(null);
   const [showWelcome, setShowWelcome] = useState(true);
@@ -129,13 +131,15 @@ const Index = () => {
 
         {/* Admin Access Button */}
         <div className="text-center mb-12">
-          <Button
-            onClick={() => setShowAdmin(true)}
-            variant="outline"
-            className="bg-card/50 border-primary/20 text-primary hover:bg-primary/10 hover:border-primary/40 transition-all duration-300"
-          >
-            📎 Agregar nueva KB / Caso técnico
-          </Button>
+          {canEdit && (
+            <Button
+              onClick={() => setShowAdmin(true)}
+              variant="outline"
+              className="bg-card/50 border-primary/20 text-primary hover:bg-primary/10 hover:border-primary/40 transition-all duration-300"
+            >
+              📎 Agregar nueva KB / Caso técnico
+            </Button>
+          )}
         </div>
 
         {showWelcome && (

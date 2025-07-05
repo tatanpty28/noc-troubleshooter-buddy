@@ -1,17 +1,19 @@
 import { useState } from "react";
 import { SearchBar } from "@/components/SearchBar";
 import { TroubleshootingCard } from "@/components/TroubleshootingCard";
+import { AdminPanel } from "@/components/AdminPanel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { searchProblems, TroubleshootingProblem } from "@/data/troubleshootingData";
-import { Coffee, Monitor, Zap, Users } from "lucide-react";
+import { Coffee, Monitor, Zap, Users, Settings } from "lucide-react";
 import nocHero from "@/assets/noc-hero.jpg";
 
 const Index = () => {
   const [searchResults, setSearchResults] = useState<TroubleshootingProblem[]>([]);
   const [selectedProblem, setSelectedProblem] = useState<TroubleshootingProblem | null>(null);
   const [showWelcome, setShowWelcome] = useState(true);
+  const [showAdmin, setShowAdmin] = useState(false);
 
   const handleSearch = (query: string) => {
     const results = searchProblems(query);
@@ -33,7 +35,19 @@ const Index = () => {
     setSelectedProblem(null);
     setSearchResults([]);
     setShowWelcome(true);
+    setShowAdmin(false);
   };
+
+  // Admin Panel View
+  if (showAdmin) {
+    return (
+      <div className="min-h-screen bg-background p-6">
+        <div className="max-w-6xl mx-auto">
+          <AdminPanel onClose={() => setShowAdmin(false)} />
+        </div>
+      </div>
+    );
+  }
 
   if (selectedProblem) {
     return (
@@ -66,6 +80,21 @@ const Index = () => {
           style={{ backgroundImage: `url(${nocHero})` }}
         >
           <div className="absolute inset-0 bg-black/60"></div>
+          
+          {/* Admin Button - Top Right */}
+          <div className="absolute top-4 right-4 z-20">
+            <Button
+              onClick={() => setShowAdmin(true)}
+              variant="outline"
+              size="sm"
+              className="bg-black/50 border-white/20 text-white hover:bg-white/10"
+              title="Panel de Administración (Solo administradores)"
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              Admin
+            </Button>
+          </div>
+          
           <div className="relative z-10 text-center text-white px-6">
             <h1 className="text-5xl font-bold mb-4 text-primary glow-effect">
               Bienvenido al NOC

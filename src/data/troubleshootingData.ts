@@ -12,6 +12,29 @@ export interface EscalationInfo {
   additionalInfo?: string;
 }
 
+export interface KnowledgeBase {
+  id: string;
+  title: string;
+  description: string;
+  keywords: string[];
+  checklist: ChecklistItem[];
+  escalation: EscalationInfo;
+  category: string;
+  dateCreated: string;
+  lastUpdated: string;
+}
+
+export interface CaseHistory {
+  id: string;
+  relatedKB: string;
+  incidentDescription: string;
+  dateResolved: string;
+  technicianName?: string;
+  actionsPerformed: string[];
+  finalResult: 'resuelto' | 'escalado' | 'sin_resolver';
+  additionalNotes?: string;
+}
+
 export interface TroubleshootingProblem {
   id: string;
   title: string;
@@ -20,15 +43,20 @@ export interface TroubleshootingProblem {
   checklist: ChecklistItem[];
   escalation: EscalationInfo;
   category: string;
+  kb: KnowledgeBase;
+  lastSimilarCase?: CaseHistory;
 }
 
-export const troubleshootingDatabase: TroubleshootingProblem[] = [
+// Bases de datos separadas para KBs y casos históricos
+export const knowledgeBaseDatabase: KnowledgeBase[] = [
   {
-    id: "aircom-messaging",
+    id: "KB001",
     title: "No llega mensajería a Aircom",
     description: "Problemas con la recepción de mensajes en el sistema Aircom",
     keywords: ["aircom", "mensajería", "mensaje", "no llega", "correo"],
     category: "Comunicaciones",
+    dateCreated: "2024-01-01",
+    lastUpdated: "2024-01-15",
     checklist: [
       {
         id: "check-connection",
@@ -65,11 +93,13 @@ export const troubleshootingDatabase: TroubleshootingProblem[] = [
     }
   },
   {
-    id: "yul-internet",
+    id: "KB002",
     title: "No hay Internet en YUL",
     description: "Problemas de conectividad a Internet en la ubicación YUL",
     keywords: ["yul", "internet", "conexión", "red", "sin internet"],
     category: "Conectividad",
+    dateCreated: "2024-01-01",
+    lastUpdated: "2024-01-14",
     checklist: [
       {
         id: "check-physical",
@@ -106,11 +136,13 @@ export const troubleshootingDatabase: TroubleshootingProblem[] = [
     }
   },
   {
-    id: "server-down",
+    id: "KB003",
     title: "Servidor de aplicaciones caído",
     description: "El servidor principal de aplicaciones no responde",
     keywords: ["servidor", "caído", "down", "aplicación", "no responde"],
     category: "Infraestructura",
+    dateCreated: "2024-01-01",
+    lastUpdated: "2024-01-15",
     checklist: [
       {
         id: "check-server-status",
@@ -152,6 +184,70 @@ export const troubleshootingDatabase: TroubleshootingProblem[] = [
     }
   }
 ];
+
+export const caseHistoryDatabase: CaseHistory[] = [
+  {
+    id: "CAS001",
+    relatedKB: "KB001",
+    incidentDescription: "Mensajería de Aircom no funcionando desde las 14:30. Usuarios reportan que no reciben notificaciones.",
+    dateResolved: "2024-01-10",
+    technicianName: "Carlos Mendez",
+    actionsPerformed: [
+      "Verificó conectividad - OK",
+      "Reinició servicio de mensajería",
+      "Limpió cola de mensajes pendientes",
+      "Probó envío de mensaje de prueba - Exitoso"
+    ],
+    finalResult: "resuelto",
+    additionalNotes: "El problema se debía a una cola saturada de mensajes pendientes. Se recomienda implementar monitoreo automático."
+  },
+  {
+    id: "CAS002",
+    relatedKB: "KB002",
+    incidentDescription: "Usuarios en YUL reportan intermitencia en conexión a internet desde las 09:00.",
+    dateResolved: "2024-01-12",
+    technicianName: "Ana Rodriguez",
+    actionsPerformed: [
+      "Verificó conexiones físicas - OK",
+      "Ping al gateway - Paquetes perdidos 15%",
+      "Contactó al ISP",
+      "ISP realizó ajustes en el circuito"
+    ],
+    finalResult: "escalado",
+    additionalNotes: "Problema resuelto por el ISP. Era un issue de configuración en su lado. Tiempo de resolución: 3 horas."
+  },
+  {
+    id: "CAS003",
+    relatedKB: "KB003",
+    incidentDescription: "Servidor principal no responde desde las 22:15. Aplicaciones críticas fuera de servicio.",
+    dateResolved: "2024-01-08",
+    technicianName: "Luis Gomez",
+    actionsPerformed: [
+      "Verificó estado del servidor - Sin respuesta",
+      "Acceso físico al servidor",
+      "Reinició servidor manualmente",
+      "Verificó servicios críticos - Todos operativos"
+    ],
+    finalResult: "resuelto",
+    additionalNotes: "Falla de hardware en la fuente de poder. Se reemplazó componente. Downtime total: 45 minutos."
+  }
+];
+
+export const troubleshootingDatabase: TroubleshootingProblem[] = knowledgeBaseDatabase.map(kb => {
+  const lastCase = caseHistoryDatabase.find(case_ => case_.relatedKB === kb.id);
+  
+  return {
+    id: kb.id.replace('KB', 'troubleshoot-'),
+    title: kb.title,
+    description: kb.description,
+    keywords: kb.keywords,
+    checklist: kb.checklist,
+    escalation: kb.escalation,
+    category: kb.category,
+    kb: kb,
+    lastSimilarCase: lastCase
+  };
+});
 
 export const searchProblems = (query: string): TroubleshootingProblem[] => {
   const lowerQuery = query.toLowerCase();

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Cookie } from "lucide-react";
@@ -7,14 +7,38 @@ interface SearchBarProps {
   onSearch: (query: string) => void;
 }
 
+const cookieMessages = [
+  "¿Con qué galletas vienes hoy? ¡Y eso que las galletas son siempre heredadas :) ! 🍪",
+  "¡Alerta de galleta detectada! Proceda con cuidado… podría ser de chocolate.",
+  "El sistema encontró una galleta... pero no es de chispas, es de errores heredados.",
+  "Bienvenido al NOC: si no rompiste nada, revisa mejor… probablemente sí lo hiciste.",
+  "Debug Mode activado: ¡Que las galletas y los logs te acompañen!",
+  "KB no encontrada. ¿Has probado apagar y encender la galleta?",
+  "La última persona que tocó esto dejó una nota: \"buena suerte…\"",
+  "¿Por qué siempre es culpa del DNS? Porque es el primo rebelde de las galletas.",
+  "¿Te acuerdas de lo que hiciste ayer? No, yo tampoco. ¡Vamos a revisar los logs!",
+  "El sistema encontró una coincidencia en KB1234: \"Tomarse un café y volver a intentarlo\"."
+];
+
 export const SearchBar = ({ onSearch }: SearchBarProps) => {
   const [query, setQuery] = useState("");
+  const [currentMessage, setCurrentMessage] = useState("");
+
+  useEffect(() => {
+    const randomMessage = cookieMessages[Math.floor(Math.random() * cookieMessages.length)];
+    setCurrentMessage(randomMessage);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
       onSearch(query.trim());
     }
+  };
+
+  const handleCookieClick = () => {
+    const randomMessage = cookieMessages[Math.floor(Math.random() * cookieMessages.length)];
+    setCurrentMessage(randomMessage);
   };
 
   return (
@@ -37,9 +61,9 @@ export const SearchBar = ({ onSearch }: SearchBarProps) => {
         </Button>
       </form>
       
-      <div className="flex items-center justify-center mt-4 text-sm text-muted-foreground">
+      <div className="flex items-center justify-center mt-4 text-sm text-muted-foreground cursor-pointer hover:text-secondary transition-colors" onClick={handleCookieClick}>
         <Cookie className="w-4 h-4 mr-2 text-secondary" />
-        <span>¿Con qué galletas vienes hoy? 🍪</span>
+        <span>{currentMessage}</span>
       </div>
     </div>
   );

@@ -112,9 +112,30 @@ const Index = () => {
 
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-6 py-12">
+        {/* Welcome Message */}
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-semibold text-foreground mb-2">
+            🧁 ¿En qué te ayudo hoy?
+          </h2>
+          <p className="text-lg text-muted-foreground">
+            ¿Vienes con galletas buscando solución o vienes con soluciones para las galletas?
+          </p>
+        </div>
+
         {/* Search Section */}
-        <div className="mb-12">
+        <div className="mb-8">
           <SearchBar onSearch={handleSearch} />
+        </div>
+
+        {/* Admin Access Button */}
+        <div className="text-center mb-12">
+          <Button
+            onClick={() => setShowAdmin(true)}
+            variant="outline"
+            className="bg-card/50 border-primary/20 text-primary hover:bg-primary/10 hover:border-primary/40 transition-all duration-300"
+          >
+            📎 Agregar nueva KB / Caso técnico
+          </Button>
         </div>
 
         {showWelcome && (

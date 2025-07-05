@@ -5,6 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, AlertCircle, ExternalLink } from "lucide-react";
 import { TroubleshootingProblem, ChecklistItem } from "@/data/troubleshootingData";
+import { EquipmentVisual } from "@/components/EquipmentVisual";
 
 interface TroubleshootingCardProps {
   problem: TroubleshootingProblem;
@@ -71,24 +72,27 @@ export const TroubleshootingCard = ({ problem, onComplete }: TroubleshootingCard
             <div className="space-y-3">
               <h4 className="font-medium text-foreground">Pasos a verificar:</h4>
               {checklist.map((item) => (
-                <div key={item.id} className="flex items-start space-x-3 p-3 rounded-lg bg-accent/50 hover:bg-accent transition-colors">
-                  <Checkbox
-                    id={item.id}
-                    checked={item.completed}
-                    onCheckedChange={() => toggleChecklistItem(item.id)}
-                    className="mt-1"
-                  />
-                  <label 
-                    htmlFor={item.id} 
-                    className={`flex-1 text-sm cursor-pointer ${
-                      item.completed ? 'line-through text-muted-foreground' : 'text-foreground'
-                    }`}
-                  >
-                    {item.description}
-                  </label>
-                  {item.completed && (
-                    <CheckCircle className="w-4 h-4 text-success flex-shrink-0 mt-0.5" />
-                  )}
+                <div key={item.id} className="space-y-2">
+                  <div className="flex items-start space-x-3 p-3 rounded-lg bg-accent/50 hover:bg-accent transition-colors">
+                    <Checkbox
+                      id={item.id}
+                      checked={item.completed}
+                      onCheckedChange={() => toggleChecklistItem(item.id)}
+                      className="mt-1"
+                    />
+                    <label 
+                      htmlFor={item.id} 
+                      className={`flex-1 text-sm cursor-pointer ${
+                        item.completed ? 'line-through text-muted-foreground' : 'text-foreground'
+                      }`}
+                    >
+                      {item.description}
+                    </label>
+                    {item.completed && (
+                      <CheckCircle className="w-4 h-4 text-success flex-shrink-0 mt-0.5" />
+                    )}
+                  </div>
+                  <EquipmentVisual stepDescription={item.description} />
                 </div>
               ))}
             </div>

@@ -123,7 +123,12 @@ export const knowledgeBaseDatabase: KnowledgeBase[] = [
       },
       {
         id: "reboot-equipment",
-        description: "Reiniciar equipos de red en orden: modem → router → switches",
+        description: "Reiniciar equipos de red en orden: primero reiniciar el switch de acceso desconectando la alimentación por 10 segundos",
+        completed: false
+      },
+      {
+        id: "reboot-router",
+        description: "Si el problema persiste, reiniciar el router principal desconectando la alimentación y esperar 2 minutos",
         completed: false
       }
     ],
@@ -171,7 +176,7 @@ export const knowledgeBaseDatabase: KnowledgeBase[] = [
       },
       {
         id: "restart-services",
-        description: "Reiniciar servicios en orden seguro",
+        description: "Si los servicios fallan, reiniciar el servidor desde la consola de administración",
         completed: false
       }
     ],

@@ -106,7 +106,7 @@ const Index = () => {
             </p>
             <div className="flex items-center justify-center gap-2 text-secondary text-lg">
               <Coffee className="w-6 h-6" />
-              <span>¿Con qué galletas vienes hoy? ¡Vamos a resolver problemas! 🍪</span>
+              <span>¿Con qué galletas vienes hoy? ¡Y eso que las galletas son siempre heredadas :) ! 🍪</span>
             </div>
           </div>
         </div>

@@ -40,15 +40,10 @@ const Index = () => {
     setShowAdmin(false);
   };
 
-  // Admin Panel View
+  // Admin Panel View - redirect to /admin route instead
   if (showAdmin) {
-    return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-6xl mx-auto">
-          <AdminPanel onClose={() => setShowAdmin(false)} />
-        </div>
-      </div>
-    );
+    window.location.href = '/admin';
+    return null;
   }
 
   if (selectedProblem) {
@@ -74,38 +69,24 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="max-w-6xl mx-auto">
       {/* Hero Section */}
-      <div className="relative">
+      <div className="relative mb-12">
         <div 
-          className="h-96 bg-cover bg-center bg-no-repeat flex items-center justify-center relative"
+          className="h-80 bg-cover bg-center bg-no-repeat flex items-center justify-center relative rounded-xl overflow-hidden"
           style={{ backgroundImage: `url(${nocHero})` }}
         >
           <div className="absolute inset-0 bg-black/60"></div>
           
-          {/* Admin Button - Top Right */}
-          <div className="absolute top-4 right-4 z-20">
-            <Button
-              onClick={() => setShowAdmin(true)}
-              variant="outline"
-              size="sm"
-              className="bg-black/50 border-white/20 text-white hover:bg-white/10"
-              title="Panel de Administración (Solo administradores)"
-            >
-              <Settings className="w-4 h-4 mr-2" />
-              Admin
-            </Button>
-          </div>
-          
           <div className="relative z-10 text-center text-white px-6">
-            <h1 className="text-5xl font-bold mb-4 text-primary glow-effect">
+            <h1 className="text-4xl font-bold mb-4 text-primary glow-effect">
               Bienvenido al NOC
             </h1>
-            <p className="text-xl mb-6 text-gray-200">
-              Centro de Operaciones de Red - Tu asistente inteligente para resolución de problemas
+            <p className="text-lg mb-4 text-gray-200">
+              Centro de Operaciones de Red - Tu asistente inteligente
             </p>
-            <div className="flex items-center justify-center gap-2 text-secondary text-lg">
-              <Coffee className="w-6 h-6" />
+            <div className="flex items-center justify-center gap-2 text-secondary">
+              <Coffee className="w-5 h-5" />
               <span>¿Con qué galletas vienes hoy? ¡Y eso que las galletas son siempre heredadas :) ! 🍪</span>
             </div>
           </div>
@@ -113,7 +94,7 @@ const Index = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-6 py-12">
+      <div>
         {/* Welcome Message */}
         <div className="text-center mb-8">
           <h2 className="text-2xl font-semibold text-foreground mb-2">
@@ -133,7 +114,7 @@ const Index = () => {
         <div className="text-center mb-12">
           {canEdit && (
             <Button
-              onClick={() => setShowAdmin(true)}
+              onClick={() => window.location.href = '/admin'}
               variant="outline"
               className="bg-card/50 border-primary/20 text-primary hover:bg-primary/10 hover:border-primary/40 transition-all duration-300"
             >

@@ -6,6 +6,7 @@ import {
   ChecklistItem,
   EscalationInfo 
 } from '@/data/troubleshootingData';
+import { Estacion } from '@/hooks/useEstaciones';
 
 // Data service using localStorage
 export class NOCDataService {
@@ -15,6 +16,7 @@ export class NOCDataService {
   initializeDefaultData() {
     const kbs = this.getKnowledgeBases();
     const cases = this.getCaseHistory();
+    const estaciones = this.getEstaciones();
     
     if (kbs.length === 0) {
       this.storage.setItem('knowledge_bases', this.getDefaultKBs());
@@ -22,6 +24,10 @@ export class NOCDataService {
     
     if (cases.length === 0) {
       this.storage.setItem('case_history', this.getDefaultCases());
+    }
+
+    if (estaciones.length === 0) {
+      this.storage.setItem('estaciones', this.getDefaultEstaciones());
     }
   }
 
@@ -111,6 +117,29 @@ export class NOCDataService {
 
   setUserRole(role: 'admin' | 'editor' | 'user'): void {
     this.storage.setItem('user_role', role);
+  }
+
+  // Estaciones methods
+  getEstaciones(): Estacion[] {
+    return this.storage.getItem('estaciones', []);
+  }
+
+  saveEstacion(estacion: Estacion): void {
+    const estaciones = this.getEstaciones();
+    const existingIndex = estaciones.findIndex(existing => existing.id === estacion.id);
+    
+    if (existingIndex >= 0) {
+      estaciones[existingIndex] = estacion;
+    } else {
+      estaciones.push(estacion);
+    }
+    
+    this.storage.setItem('estaciones', estaciones);
+  }
+
+  deleteEstacion(id: string): void {
+    const estaciones = this.getEstaciones().filter(est => est.id !== id);
+    this.storage.setItem('estaciones', estaciones);
   }
 
   // Default data
@@ -299,6 +328,58 @@ export class NOCDataService {
         ],
         finalResult: "resuelto",
         additionalNotes: "Falla de hardware en la fuente de poder. Se reemplazó componente. Downtime total: 45 minutos."
+      }
+    ];
+  }
+
+  private getDefaultEstaciones(): Estacion[] {
+    return [
+      {
+        id: 'yul-001',
+        codigo: 'YUL',
+        nombre: 'Aeropuerto Pierre Elliott Trudeau',
+        ubicacion: 'Montreal, Quebec, Canada',
+        proveedores: ['Cirion', 'Tigo', 'Bell Canada'],
+        equipos: [
+          {
+            id: 'yul-router-01',
+            modelo: 'Cisco ISR 4000 Series',
+            imagen: '/src/assets/equipos/router-cisco.jpg',
+            descripcion: 'Router principal para conexión WAN',
+            metodoReinicio: 'Desconectar alimentación por 10 segundos, luego reconectar'
+          },
+          {
+            id: 'yul-switch-01',
+            modelo: 'Cisco Catalyst 2960-X',
+            imagen: '/src/assets/equipos/network-switch.jpg',
+            descripcion: 'Switch de acceso para red LAN',
+            metodoReinicio: 'Desconectar alimentación por 10 segundos'
+          }
+        ],
+        contacto: {
+          email: 'noc@yul.aero',
+          telefono: '+1-514-123-4567'
+        }
+      },
+      {
+        id: 'bog-001',
+        codigo: 'BOG',
+        nombre: 'Aeropuerto El Dorado',
+        ubicacion: 'Bogotá, Colombia',
+        proveedores: ['Claro', 'Tigo', 'ETB'],
+        equipos: [
+          {
+            id: 'bog-server-01',
+            modelo: 'Dell PowerEdge R740',
+            imagen: '/src/assets/equipos/server-rack.jpg',
+            descripcion: 'Servidor de aplicaciones principal',
+            metodoReinicio: 'Reinicio desde consola de administración o botón power'
+          }
+        ],
+        contacto: {
+          email: 'soporte@bog.aero',
+          telefono: '+57-1-266-2000'
+        }
       }
     ];
   }

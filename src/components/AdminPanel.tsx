@@ -12,6 +12,7 @@ import { Plus, Edit2, Eye, Trash2, BookOpen, Settings2 } from "lucide-react";
 import { KnowledgeBase, CaseHistory, ChecklistItem, EscalationInfo } from "@/data/troubleshootingData";
 import { useToast } from "@/hooks/use-toast";
 import { useNOCData } from "@/hooks/useNOCData";
+import { Estacion, Equipo } from "@/hooks/useEstaciones";
 
 interface AdminPanelProps {
   onClose: () => void;
@@ -28,16 +29,29 @@ interface CaseFormData extends Partial<CaseHistory> {
   finalResult?: 'resuelto' | 'escalado' | 'sin_resolver';
 }
 
+interface EstacionFormData extends Partial<Estacion> {
+  proveedoresText?: string;
+  equiposData?: Array<{
+    modelo: string;
+    descripcion: string;
+    metodoReinicio: string;
+    imagen: string;
+  }>;
+}
+
 export const AdminPanel = ({ onClose }: AdminPanelProps) => {
   const { toast } = useToast();
-  const { kbs, cases, saveKB, saveCase, deleteKB, deleteCase, userRole, updateUserRole } = useNOCData();
+  const { kbs, cases, estaciones, saveKB, saveCase, saveEstacion, deleteKB, deleteCase, deleteEstacion, userRole, updateUserRole } = useNOCData();
   const [activeTab, setActiveTab] = useState("kbs");
   const [kbDialogOpen, setKbDialogOpen] = useState(false);
   const [caseDialogOpen, setCaseDialogOpen] = useState(false);
+  const [estacionDialogOpen, setEstacionDialogOpen] = useState(false);
   const [editingKB, setEditingKB] = useState<KnowledgeBase | null>(null);
   const [editingCase, setEditingCase] = useState<CaseHistory | null>(null);
+  const [editingEstacion, setEditingEstacion] = useState<Estacion | null>(null);
   const [kbFormData, setKbFormData] = useState<KBFormData>({});
   const [caseFormData, setCaseFormData] = useState<CaseFormData>({});
+  const [estacionFormData, setEstacionFormData] = useState<EstacionFormData>({});
 
   const handleSaveKB = () => {
     if (!kbFormData.id || !kbFormData.title || !kbFormData.description) {
@@ -106,6 +120,47 @@ export const AdminPanel = ({ onClose }: AdminPanelProps) => {
       setCaseDialogOpen(false);
       setEditingCase(null);
       setCaseFormData({});
+    }
+  };
+
+  const handleSaveEstacion = () => {
+    if (!estacionFormData.codigo || !estacionFormData.nombre) {
+      toast({
+        title: "Error",
+        description: "Por favor completa código y nombre de la estación.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const newEstacion: Estacion = {
+      id: editingEstacion?.id || `est-${Date.now()}`,
+      codigo: estacionFormData.codigo,
+      nombre: estacionFormData.nombre,
+      ubicacion: estacionFormData.ubicacion || "",
+      proveedores: estacionFormData.proveedoresText?.split(',').map(p => p.trim()).filter(p => p) || [],
+      equipos: estacionFormData.equiposData?.map(eq => ({
+        id: `${estacionFormData.codigo}-${eq.modelo.replace(/\s+/g, '-').toLowerCase()}`,
+        modelo: eq.modelo,
+        imagen: eq.imagen,
+        descripcion: eq.descripcion,
+        metodoReinicio: eq.metodoReinicio
+      })) || [],
+      contacto: {
+        email: estacionFormData.contacto?.email || "",
+        telefono: estacionFormData.contacto?.telefono || ""
+      }
+    };
+
+    const success = saveEstacion(newEstacion);
+    if (success) {
+      toast({
+        title: "Estación Guardada",
+        description: "La estación ha sido guardada exitosamente.",
+      });
+      setEstacionDialogOpen(false);
+      setEditingEstacion(null);
+      setEstacionFormData({});
     }
   };
 
@@ -306,6 +361,82 @@ export const AdminPanel = ({ onClose }: AdminPanelProps) => {
     </div>
   );
 
+  const EstacionForm = () => (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="est-codigo">Código de Estación*</Label>
+          <Input 
+            id="est-codigo" 
+            placeholder="YUL" 
+            value={estacionFormData.codigo || ''}
+            onChange={(e) => setEstacionFormData(prev => ({ ...prev, codigo: e.target.value }))}
+          />
+        </div>
+        <div>
+          <Label htmlFor="est-nombre">Nombre Completo*</Label>
+          <Input 
+            id="est-nombre" 
+            placeholder="Aeropuerto Internacional" 
+            value={estacionFormData.nombre || ''}
+            onChange={(e) => setEstacionFormData(prev => ({ ...prev, nombre: e.target.value }))}
+          />
+        </div>
+      </div>
+      
+      <div>
+        <Label htmlFor="est-ubicacion">Ubicación</Label>
+        <Input 
+          id="est-ubicacion" 
+          placeholder="Ciudad, País" 
+          value={estacionFormData.ubicacion || ''}
+          onChange={(e) => setEstacionFormData(prev => ({ ...prev, ubicacion: e.target.value }))}
+        />
+      </div>
+      
+      <div>
+        <Label htmlFor="est-proveedores">Proveedores (separados por comas)</Label>
+        <Input 
+          id="est-proveedores" 
+          placeholder="Cirion, Tigo, Claro" 
+          value={estacionFormData.proveedoresText || ''}
+          onChange={(e) => setEstacionFormData(prev => ({ ...prev, proveedoresText: e.target.value }))}
+        />
+      </div>
+      
+      <div>
+        <Label>Información de Contacto</Label>
+        <div className="grid grid-cols-2 gap-2 mt-2">
+          <Input 
+            placeholder="Email" 
+            value={estacionFormData.contacto?.email || ''}
+            onChange={(e) => setEstacionFormData(prev => ({ 
+              ...prev, 
+              contacto: { ...prev.contacto, email: e.target.value, telefono: prev.contacto?.telefono || '' }
+            }))}
+          />
+          <Input 
+            placeholder="Teléfono" 
+            value={estacionFormData.contacto?.telefono || ''}
+            onChange={(e) => setEstacionFormData(prev => ({ 
+              ...prev, 
+              contacto: { ...prev.contacto, telefono: e.target.value, email: prev.contacto?.email || '' }
+            }))}
+          />
+        </div>
+      </div>
+      
+      <div className="flex justify-end gap-2">
+        <Button variant="outline" onClick={() => {
+          setEstacionDialogOpen(false);
+          setEditingEstacion(null);
+          setEstacionFormData({});
+        }}>Cancelar</Button>
+        <Button onClick={handleSaveEstacion}>Guardar Estación</Button>
+      </div>
+    </div>
+  );
+
   return (
     <Card className="noc-card w-full max-w-6xl mx-auto">
       <CardHeader>
@@ -335,9 +466,10 @@ export const AdminPanel = ({ onClose }: AdminPanelProps) => {
 
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="kbs">Knowledge Bases</TabsTrigger>
             <TabsTrigger value="cases">Casos Históricos</TabsTrigger>
+            <TabsTrigger value="estaciones">Estaciones</TabsTrigger>
           </TabsList>
 
           <TabsContent value="kbs" className="space-y-4">
@@ -485,6 +617,83 @@ export const AdminPanel = ({ onClose }: AdminPanelProps) => {
                             toast({
                               title: "Caso Eliminado",
                               description: "El caso histórico ha sido eliminado.",
+                            });
+                          }
+                        }}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="estaciones" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-foreground">Gestión de Estaciones</h3>
+              <Dialog open={estacionDialogOpen} onOpenChange={setEstacionDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="glow-effect">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Nueva Estación
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {editingEstacion ? "Editar Estación" : "Nueva Estación"}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <EstacionForm />
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <div className="grid gap-4">
+              {estaciones.map((estacion) => (
+                <Card key={estacion.id} className="border border-border">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h4 className="font-semibold text-foreground">{estacion.codigo}: {estacion.nombre}</h4>
+                        </div>
+                        <p className="text-muted-foreground text-sm mb-2">{estacion.ubicacion}</p>
+                        <div className="text-xs text-muted-foreground">
+                          Proveedores: {estacion.proveedores.join(', ')} | Equipos: {estacion.equipos.length}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline">
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => {
+                          setEditingEstacion(estacion);
+                          setEstacionFormData({
+                            codigo: estacion.codigo,
+                            nombre: estacion.nombre,
+                            ubicacion: estacion.ubicacion,
+                            proveedoresText: estacion.proveedores.join(', '),
+                            contacto: estacion.contacto,
+                            equiposData: estacion.equipos.map(eq => ({
+                              modelo: eq.modelo,
+                              descripcion: eq.descripcion || '',
+                              metodoReinicio: eq.metodoReinicio || '',
+                              imagen: eq.imagen
+                            }))
+                          });
+                          setEstacionDialogOpen(true);
+                        }}>
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => {
+                          if (confirm('¿Estás seguro de eliminar esta estación?')) {
+                            deleteEstacion(estacion.id);
+                            toast({
+                              title: "Estación Eliminada",
+                              description: "La estación ha sido eliminada.",
                             });
                           }
                         }}>

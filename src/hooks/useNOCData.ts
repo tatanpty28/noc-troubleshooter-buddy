@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { nocDataService } from '@/services/dataService';
 import { KnowledgeBase, CaseHistory, TroubleshootingProblem } from '@/data/troubleshootingData';
+import { Estacion } from './useEstaciones';
 
 // Custom hook for NOC data management
 export function useNOCData() {
   const [kbs, setKbs] = useState<KnowledgeBase[]>([]);
   const [cases, setCases] = useState<CaseHistory[]>([]);
+  const [estaciones, setEstaciones] = useState<Estacion[]>([]);
   const [userRole, setUserRole] = useState<'admin' | 'editor' | 'user'>('user');
   const [isLoading, setIsLoading] = useState(true);
 
@@ -20,6 +22,7 @@ export function useNOCData() {
         // Load data
         setKbs(nocDataService.getKnowledgeBases());
         setCases(nocDataService.getCaseHistory());
+        setEstaciones(nocDataService.getEstaciones());
         setUserRole(nocDataService.getUserRole());
       } catch (error) {
         console.error('Error initializing NOC data:', error);
@@ -87,6 +90,29 @@ export function useNOCData() {
     }
   };
 
+  // Estaciones methods
+  const saveEstacion = (estacion: Estacion) => {
+    try {
+      nocDataService.saveEstacion(estacion);
+      setEstaciones(nocDataService.getEstaciones());
+      return true;
+    } catch (error) {
+      console.error('Error saving estacion:', error);
+      return false;
+    }
+  };
+
+  const deleteEstacion = (id: string) => {
+    try {
+      nocDataService.deleteEstacion(id);
+      setEstaciones(nocDataService.getEstaciones());
+      return true;
+    } catch (error) {
+      console.error('Error deleting estacion:', error);
+      return false;
+    }
+  };
+
   // Role management
   const updateUserRole = (role: 'admin' | 'editor' | 'user') => {
     try {
@@ -107,6 +133,7 @@ export function useNOCData() {
     // Data
     kbs,
     cases,
+    estaciones,
     userRole,
     isLoading,
     
@@ -122,6 +149,10 @@ export function useNOCData() {
     saveCase,
     deleteCase,
     
+    // Estacion methods
+    saveEstacion,
+    deleteEstacion,
+    
     // Search
     searchProblems,
     
@@ -132,6 +163,7 @@ export function useNOCData() {
     refreshData: () => {
       setKbs(nocDataService.getKnowledgeBases());
       setCases(nocDataService.getCaseHistory());
+      setEstaciones(nocDataService.getEstaciones());
     }
   };
 }

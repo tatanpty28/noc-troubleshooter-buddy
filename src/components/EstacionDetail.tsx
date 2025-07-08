@@ -109,6 +109,12 @@ export function EstacionDetail({ estacion, onClose }: EstacionDetailProps) {
                   <div className="text-sm font-medium text-muted-foreground">Ubicación</div>
                   <div className="text-foreground">{estacion.ubicacion}</div>
                 </div>
+                {estacion.ip && (
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground">Dirección IP</div>
+                    <div className="text-foreground font-mono">{estacion.ip}</div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -131,6 +137,51 @@ export function EstacionDetail({ estacion, onClose }: EstacionDetailProps) {
               </CardContent>
             </Card>
           </div>
+
+          {/* Photo and Attachments */}
+          {(estacion.photo || (estacion.attachments && estacion.attachments.length > 0)) && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {estacion.photo && (
+                <Card className="noc-card">
+                  <CardHeader>
+                    <CardTitle>Foto de Equipos</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <img 
+                      src={estacion.photo} 
+                      alt="Equipos de la estación"
+                      className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => window.open(estacion.photo, '_blank')}
+                    />
+                  </CardContent>
+                </Card>
+              )}
+
+              {estacion.attachments && estacion.attachments.length > 0 && (
+                <Card className="noc-card">
+                  <CardHeader>
+                    <CardTitle>Adjuntos</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {estacion.attachments.map((attachment, index) => (
+                        <div key={index} className="flex items-center justify-between p-2 border border-border rounded">
+                          <span className="text-sm">Adjunto {index + 1}</span>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => window.open(attachment, '_blank')}
+                          >
+                            Descargar
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
         </TabsContent>
 
         {/* Tab: Proveedores */}
@@ -232,7 +283,7 @@ export function EstacionDetail({ estacion, onClose }: EstacionDetailProps) {
               <CardContent className="space-y-4">
                 <Button 
                   onClick={handlePing}
-                  disabled={loadingPing}
+                  disabled={loadingPing || !estacion.ip}
                   className="w-full"
                 >
                   {loadingPing ? (
@@ -248,13 +299,22 @@ export function EstacionDetail({ estacion, onClose }: EstacionDetailProps) {
                   )}
                 </Button>
                 
+                {!estacion.ip && (
+                  <p className="text-sm text-muted-foreground text-center">
+                    Ingrese la IP para habilitar pruebas
+                  </p>
+                )}
+                
                 {pingResult && (
                   <div className="p-4 bg-accent/30 rounded-lg text-sm space-y-2">
                     <div className="font-mono">
-                      <div>Target: {pingResult.target}</div>
+                      <div>Target: {pingResult.target} {pingResult.targetName && `(${pingResult.targetName})`}</div>
                       <div className={pingResult.success ? 'text-success' : 'text-destructive'}>
                         Status: {pingResult.success ? 'SUCCESS' : 'FAILED'}
                       </div>
+                      {pingResult.error && (
+                        <div className="text-destructive">Error: {pingResult.error}</div>
+                      )}
                       {pingResult.success && (
                         <>
                           <div>Latency: {pingResult.latency}ms</div>
@@ -281,7 +341,7 @@ export function EstacionDetail({ estacion, onClose }: EstacionDetailProps) {
               <CardContent className="space-y-4">
                 <Button 
                   onClick={handleTraceroute}
-                  disabled={loadingTraceroute}
+                  disabled={loadingTraceroute || !estacion.ip}
                   className="w-full"
                   variant="secondary"
                 >
@@ -298,19 +358,31 @@ export function EstacionDetail({ estacion, onClose }: EstacionDetailProps) {
                   )}
                 </Button>
                 
+                {!estacion.ip && (
+                  <p className="text-sm text-muted-foreground text-center">
+                    Ingrese la IP para habilitar pruebas
+                  </p>
+                )}
+                
                 {tracerouteResult && (
                   <div className="p-4 bg-accent/30 rounded-lg text-sm max-h-64 overflow-y-auto">
                     <div className="font-mono space-y-1">
-                      <div className="font-semibold">Target: {tracerouteResult.target}</div>
-                      <div className="text-success">Total Hops: {tracerouteResult.totalHops}</div>
-                      <div className="border-t border-border pt-2 mt-2">
-                        {tracerouteResult.hops.map((hop: any) => (
-                          <div key={hop.hop} className="flex justify-between">
-                            <span>{hop.hop}. {hop.ip}</span>
-                            <span>{hop.latency}ms</span>
+                      <div className="font-semibold">Target: {tracerouteResult.target} {tracerouteResult.targetName && `(${tracerouteResult.targetName})`}</div>
+                      {tracerouteResult.error ? (
+                        <div className="text-destructive">Error: {tracerouteResult.error}</div>
+                      ) : (
+                        <>
+                          <div className="text-success">Total Hops: {tracerouteResult.totalHops}</div>
+                          <div className="border-t border-border pt-2 mt-2">
+                            {tracerouteResult.hops.map((hop: any) => (
+                              <div key={hop.hop} className="flex justify-between">
+                                <span>{hop.hop}. {hop.ip}</span>
+                                <span>{hop.latency}ms</span>
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
+                        </>
+                      )}
                       <div className="text-xs text-muted-foreground mt-2 pt-2 border-t border-border">
                         {new Date(tracerouteResult.timestamp).toLocaleString()}
                       </div>

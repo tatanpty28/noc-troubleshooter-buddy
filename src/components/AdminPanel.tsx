@@ -37,6 +37,8 @@ interface EstacionFormData extends Partial<Estacion> {
     metodoReinicio: string;
     imagen: string;
   }>;
+  attachmentFiles?: FileList | null;
+  photoFile?: File | null;
 }
 
 export const AdminPanel = ({ onClose }: AdminPanelProps) => {
@@ -123,7 +125,7 @@ export const AdminPanel = ({ onClose }: AdminPanelProps) => {
     }
   };
 
-  const handleSaveEstacion = () => {
+  const handleSaveEstacion = async () => {
     if (!estacionFormData.codigo || !estacionFormData.nombre) {
       toast({
         title: "Error",
@@ -133,11 +135,30 @@ export const AdminPanel = ({ onClose }: AdminPanelProps) => {
       return;
     }
 
+    // Handle file uploads
+    const attachments: string[] = [];
+    let photoDataUrl = estacionFormData.photo || "";
+
+    // Process attachments
+    if (estacionFormData.attachmentFiles) {
+      for (let i = 0; i < estacionFormData.attachmentFiles.length; i++) {
+        const file = estacionFormData.attachmentFiles[i];
+        const dataUrl = await fileToDataUrl(file);
+        attachments.push(dataUrl);
+      }
+    }
+
+    // Process photo
+    if (estacionFormData.photoFile) {
+      photoDataUrl = await fileToDataUrl(estacionFormData.photoFile);
+    }
+
     const newEstacion: Estacion = {
       id: editingEstacion?.id || `est-${Date.now()}`,
       codigo: estacionFormData.codigo,
       nombre: estacionFormData.nombre,
       ubicacion: estacionFormData.ubicacion || "",
+      ip: estacionFormData.ip || "",
       proveedores: estacionFormData.proveedoresText?.split(',').map(p => p.trim()).filter(p => p) || [],
       equipos: estacionFormData.equiposData?.map(eq => ({
         id: `${estacionFormData.codigo}-${eq.modelo.replace(/\s+/g, '-').toLowerCase()}`,
@@ -146,6 +167,8 @@ export const AdminPanel = ({ onClose }: AdminPanelProps) => {
         descripcion: eq.descripcion,
         metodoReinicio: eq.metodoReinicio
       })) || [],
+      attachments: [...(estacionFormData.attachments || []), ...attachments],
+      photo: photoDataUrl,
       contacto: {
         email: estacionFormData.contacto?.email || "",
         telefono: estacionFormData.contacto?.telefono || ""
@@ -162,6 +185,16 @@ export const AdminPanel = ({ onClose }: AdminPanelProps) => {
       setEditingEstacion(null);
       setEstacionFormData({});
     }
+  };
+
+  // Helper function to convert file to data URL
+  const fileToDataUrl = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   };
 
   const KBForm = () => (
@@ -405,6 +438,16 @@ export const AdminPanel = ({ onClose }: AdminPanelProps) => {
       </div>
       
       <div>
+        <Label htmlFor="est-ip">Dirección IP</Label>
+        <Input 
+          id="est-ip" 
+          placeholder="192.168.1.100" 
+          value={estacionFormData.ip || ''}
+          onChange={(e) => setEstacionFormData(prev => ({ ...prev, ip: e.target.value }))}
+        />
+      </div>
+      
+      <div>
         <Label>Información de Contacto</Label>
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Input 
@@ -424,6 +467,26 @@ export const AdminPanel = ({ onClose }: AdminPanelProps) => {
             }))}
           />
         </div>
+      </div>
+      
+      <div>
+        <Label htmlFor="est-attachments">Adjuntos</Label>
+        <Input 
+          id="est-attachments" 
+          type="file" 
+          multiple 
+          onChange={(e) => setEstacionFormData(prev => ({ ...prev, attachmentFiles: e.target.files }))}
+        />
+      </div>
+      
+      <div>
+        <Label htmlFor="est-photo">Foto de Equipos</Label>
+        <Input 
+          id="est-photo" 
+          type="file" 
+          accept="image/*" 
+          onChange={(e) => setEstacionFormData(prev => ({ ...prev, photoFile: e.target.files?.[0] || null }))}
+        />
       </div>
       
       <div className="flex justify-end gap-2">

@@ -14,8 +14,11 @@ export interface Estacion {
   codigo: string;
   nombre: string;
   ubicacion: string;
+  ip?: string;
   proveedores: string[];
   equipos: Equipo[];
+  attachments?: string[];
+  photo?: string;
   contacto: {
     email: string;
     telefono: string;
@@ -173,12 +176,23 @@ export function useEstaciones() {
     await new Promise(resolve => setTimeout(resolve, 1500));
     
     const estacion = obtenerEstacionPorId(estacionId);
+    
+    if (!estacion?.ip) {
+      return {
+        success: false,
+        error: 'IP no configurada',
+        timestamp: new Date().toISOString(),
+        target: estacion?.codigo || 'Unknown'
+      };
+    }
+    
     return {
       success: Math.random() > 0.3, // 70% success rate
       latency: Math.floor(Math.random() * 50) + 20,
       packetLoss: Math.random() > 0.8 ? Math.floor(Math.random() * 5) : 0,
       timestamp: new Date().toISOString(),
-      target: estacion?.codigo || 'Unknown'
+      target: estacion.ip,
+      targetName: estacion.codigo
     };
   };
 
@@ -186,6 +200,16 @@ export function useEstaciones() {
     await new Promise(resolve => setTimeout(resolve, 2000));
     
     const estacion = obtenerEstacionPorId(estacionId);
+    
+    if (!estacion?.ip) {
+      return {
+        success: false,
+        error: 'IP no configurada',
+        timestamp: new Date().toISOString(),
+        target: estacion?.codigo || 'Unknown'
+      };
+    }
+    
     const hops = Array.from({ length: Math.floor(Math.random() * 8) + 3 }, (_, i) => ({
       hop: i + 1,
       ip: `192.168.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
@@ -197,7 +221,8 @@ export function useEstaciones() {
       hops,
       totalHops: hops.length,
       timestamp: new Date().toISOString(),
-      target: estacion?.codigo || 'Unknown'
+      target: estacion.ip,
+      targetName: estacion.codigo
     };
   };
 

@@ -77,9 +77,18 @@ export default function Estaciones() {
     <div className="max-w-6xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center gap-3 mb-4">
-          <Factory className="w-8 h-8 text-primary" />
-          <h1 className="text-3xl font-bold text-foreground">Estaciones</h1>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <Factory className="w-8 h-8 text-primary" />
+            <h1 className="text-3xl font-bold text-foreground">Estaciones</h1>
+          </div>
+          <Button 
+            onClick={() => window.location.href = '/'}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            ← Volver al Inicio
+          </Button>
         </div>
         <p className="text-muted-foreground text-lg">
           Gestión y monitoreo de estaciones de telecomunicaciones

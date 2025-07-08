@@ -70,6 +70,16 @@ const Index = () => {
 
   return (
     <div className="max-w-6xl mx-auto">
+      {/* Top Navigation */}
+      <header className="top-nav mb-8">
+        <ul className="menu-list flex items-center justify-center gap-8 py-4 border-b border-border">
+          <li><a href="/" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">🔍 Buscar</a></li>
+          <li><a href="/estaciones" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">📊 Estaciones</a></li>
+          <li><a href="/casos" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">⏱ Casos Históricos</a></li>
+          <li><a href="/admin" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">⚙️ Admin</a></li>
+        </ul>
+      </header>
+
       {/* Hero Section */}
       <div className="relative mb-12">
         <div 

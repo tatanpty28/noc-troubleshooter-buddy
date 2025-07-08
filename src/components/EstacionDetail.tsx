@@ -45,6 +45,96 @@ export function EstacionDetail({ estacion, onClose }: EstacionDetailProps) {
     }
   };
 
+  const handlePingForTarget = async (section: 'backoffice' | 'counter', type: 'equipo' | 'publica') => {
+    setLoadingPing(true);
+    try {
+      let targetIp = '';
+      if (section === 'backoffice') {
+        targetIp = type === 'equipo' ? estacion.ip_backoffice || '' : estacion.ip_publica_backoffice || '';
+      } else {
+        targetIp = type === 'equipo' ? estacion.ip_counter || '' : estacion.ip_publica_counter || '';
+      }
+
+      if (!targetIp) {
+        setPingResult({
+          success: false,
+          error: 'IP no configurada',
+          timestamp: new Date().toISOString(),
+          target: 'Unknown',
+          section,
+          type
+        });
+        return;
+      }
+
+      // Simulate ping result with enhanced structure
+      const result = {
+        success: Math.random() > 0.3,
+        latency: Math.floor(Math.random() * 50) + 20,
+        packetLoss: Math.random() > 0.8 ? Math.floor(Math.random() * 5) : 0,
+        timestamp: new Date().toISOString(),
+        target: targetIp,
+        targetName: estacion.codigo,
+        section,
+        type
+      };
+      
+      setPingResult(result);
+    } catch (error) {
+      console.error('Error en ping:', error);
+    } finally {
+      setLoadingPing(false);
+    }
+  };
+
+  const handleTracerouteForTarget = async (section: 'backoffice' | 'counter', type: 'equipo' | 'publica') => {
+    setLoadingTraceroute(true);
+    try {
+      let targetIp = '';
+      if (section === 'backoffice') {
+        targetIp = type === 'equipo' ? estacion.ip_backoffice || '' : estacion.ip_publica_backoffice || '';
+      } else {
+        targetIp = type === 'equipo' ? estacion.ip_counter || '' : estacion.ip_publica_counter || '';
+      }
+
+      if (!targetIp) {
+        setTracerouteResult({
+          success: false,
+          error: 'IP no configurada',
+          timestamp: new Date().toISOString(),
+          target: 'Unknown',
+          section,
+          type
+        });
+        return;
+      }
+
+      // Simulate traceroute result with enhanced structure
+      const hops = Array.from({ length: Math.floor(Math.random() * 8) + 3 }, (_, i) => ({
+        hop: i + 1,
+        ip: `192.168.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
+        latency: Math.floor(Math.random() * 30) + 5
+      }));
+
+      const result = {
+        success: true,
+        hops,
+        totalHops: hops.length,
+        timestamp: new Date().toISOString(),
+        target: targetIp,
+        targetName: estacion.codigo,
+        section,
+        type
+      };
+      
+      setTracerouteResult(result);
+    } catch (error) {
+      console.error('Error en traceroute:', error);
+    } finally {
+      setLoadingTraceroute(false);
+    }
+  };
+
   const openImageModal = (equipo: Equipo) => {
     setSelectedEquipo(equipo);
     setShowImageModal(true);
@@ -271,44 +361,94 @@ export function EstacionDetail({ estacion, onClose }: EstacionDetailProps) {
 
         {/* Tab: Pruebas */}
         <TabsContent value="pruebas" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Ping */}
+          <div className="grid grid-cols-1 gap-6">
+            {/* BackOffice Section */}
             <Card className="noc-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Activity className="w-5 h-5 text-primary" />
-                  Ping Test
+                  BackOffice - {estacion.provider_backoffice || 'Sin proveedor'}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Button 
-                  onClick={handlePing}
-                  disabled={loadingPing || !estacion.ip}
-                  className="w-full"
-                >
-                  {loadingPing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Ejecutando ping...
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-4 h-4 mr-2" />
-                      Ejecutar Ping
-                    </>
-                  )}
-                </Button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Ping BackOffice */}
+                  <div className="space-y-2">
+                    <Button 
+                      onClick={() => handlePingForTarget('backoffice', 'equipo')}
+                      disabled={loadingPing || !estacion.ip_backoffice}
+                      className="w-full"
+                      size="sm"
+                    >
+                      {loadingPing ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Play className="w-4 h-4 mr-2" />
+                      )}
+                      Ping Equipo ({estacion.ip_backoffice || 'Sin IP'})
+                    </Button>
+                    
+                    <Button 
+                      onClick={() => handlePingForTarget('backoffice', 'publica')}
+                      disabled={loadingPing || !estacion.ip_publica_backoffice}
+                      className="w-full"
+                      size="sm"
+                      variant="secondary"
+                    >
+                      {loadingPing ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Play className="w-4 h-4 mr-2" />
+                      )}
+                      Ping Pública ({estacion.ip_publica_backoffice || 'Sin IP'})
+                    </Button>
+                  </div>
+                  
+                  {/* Traceroute BackOffice */}
+                  <div className="space-y-2">
+                    <Button 
+                      onClick={() => handleTracerouteForTarget('backoffice', 'equipo')}
+                      disabled={loadingTraceroute || !estacion.ip_backoffice}
+                      className="w-full"
+                      size="sm"
+                      variant="outline"
+                    >
+                      {loadingTraceroute ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Play className="w-4 h-4 mr-2" />
+                      )}
+                      Tracert Equipo
+                    </Button>
+                    
+                    <Button 
+                      onClick={() => handleTracerouteForTarget('backoffice', 'publica')}
+                      disabled={loadingTraceroute || !estacion.ip_publica_backoffice}
+                      className="w-full"
+                      size="sm"
+                      variant="outline"
+                    >
+                      {loadingTraceroute ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Play className="w-4 h-4 mr-2" />
+                      )}
+                      Tracert Pública
+                    </Button>
+                  </div>
+                </div>
                 
-                {!estacion.ip && (
+                {(!estacion.ip_backoffice && !estacion.ip_publica_backoffice) && (
                   <p className="text-sm text-muted-foreground text-center">
-                    Ingrese la IP para habilitar pruebas
+                    Falta IP para pruebas de BackOffice
                   </p>
                 )}
                 
-                {pingResult && (
+                {pingResult && pingResult.section === 'backoffice' && (
                   <div className="p-4 bg-accent/30 rounded-lg text-sm space-y-2">
                     <div className="font-mono">
-                      <div>Target: {pingResult.target} {pingResult.targetName && `(${pingResult.targetName})`}</div>
+                      <div className="font-semibold text-primary">BackOffice - {pingResult.type}</div>
+                      <div>Target: {pingResult.target} ({estacion.codigo})</div>
                       <div className={pingResult.success ? 'text-success' : 'text-destructive'}>
                         Status: {pingResult.success ? 'SUCCESS' : 'FAILED'}
                       </div>
@@ -327,47 +467,147 @@ export function EstacionDetail({ estacion, onClose }: EstacionDetailProps) {
                     </div>
                   </div>
                 )}
+                
+                {tracerouteResult && tracerouteResult.section === 'backoffice' && (
+                  <div className="p-4 bg-accent/30 rounded-lg text-sm max-h-64 overflow-y-auto">
+                    <div className="font-mono space-y-1">
+                      <div className="font-semibold text-primary">BackOffice - {tracerouteResult.type}</div>
+                      <div className="font-semibold">Target: {tracerouteResult.target} ({estacion.codigo})</div>
+                      {tracerouteResult.error ? (
+                        <div className="text-destructive">Error: {tracerouteResult.error}</div>
+                      ) : (
+                        <>
+                          <div className="text-success">Total Hops: {tracerouteResult.totalHops}</div>
+                          <div className="border-t border-border pt-2 mt-2">
+                            {tracerouteResult.hops.map((hop: any) => (
+                              <div key={hop.hop} className="flex justify-between">
+                                <span>{hop.hop}. {hop.ip}</span>
+                                <span>{hop.latency}ms</span>
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                      <div className="text-xs text-muted-foreground mt-2 pt-2 border-t border-border">
+                        {new Date(tracerouteResult.timestamp).toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
-            {/* Traceroute */}
+            {/* Mostrador Section */}
             <Card className="noc-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-primary" />
-                  Traceroute
+                  <Activity className="w-5 h-5 text-secondary" />
+                  Mostrador - {estacion.provider_counter || 'Sin proveedor'}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Button 
-                  onClick={handleTraceroute}
-                  disabled={loadingTraceroute || !estacion.ip}
-                  className="w-full"
-                  variant="secondary"
-                >
-                  {loadingTraceroute ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Ejecutando traceroute...
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-4 h-4 mr-2" />
-                      Ejecutar Traceroute
-                    </>
-                  )}
-                </Button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Ping Mostrador */}
+                  <div className="space-y-2">
+                    <Button 
+                      onClick={() => handlePingForTarget('counter', 'equipo')}
+                      disabled={loadingPing || !estacion.ip_counter}
+                      className="w-full"
+                      size="sm"
+                    >
+                      {loadingPing ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Play className="w-4 h-4 mr-2" />
+                      )}
+                      Ping Equipo ({estacion.ip_counter || 'Sin IP'})
+                    </Button>
+                    
+                    <Button 
+                      onClick={() => handlePingForTarget('counter', 'publica')}
+                      disabled={loadingPing || !estacion.ip_publica_counter}
+                      className="w-full"
+                      size="sm"
+                      variant="secondary"
+                    >
+                      {loadingPing ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Play className="w-4 h-4 mr-2" />
+                      )}
+                      Ping Pública ({estacion.ip_publica_counter || 'Sin IP'})
+                    </Button>
+                  </div>
+                  
+                  {/* Traceroute Mostrador */}
+                  <div className="space-y-2">
+                    <Button 
+                      onClick={() => handleTracerouteForTarget('counter', 'equipo')}
+                      disabled={loadingTraceroute || !estacion.ip_counter}
+                      className="w-full"
+                      size="sm"
+                      variant="outline"
+                    >
+                      {loadingTraceroute ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Play className="w-4 h-4 mr-2" />
+                      )}
+                      Tracert Equipo
+                    </Button>
+                    
+                    <Button 
+                      onClick={() => handleTracerouteForTarget('counter', 'publica')}
+                      disabled={loadingTraceroute || !estacion.ip_publica_counter}
+                      className="w-full"
+                      size="sm"
+                      variant="outline"
+                    >
+                      {loadingTraceroute ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Play className="w-4 h-4 mr-2" />
+                      )}
+                      Tracert Pública
+                    </Button>
+                  </div>
+                </div>
                 
-                {!estacion.ip && (
+                {(!estacion.ip_counter && !estacion.ip_publica_counter) && (
                   <p className="text-sm text-muted-foreground text-center">
-                    Ingrese la IP para habilitar pruebas
+                    Falta IP para pruebas de Mostrador
                   </p>
                 )}
                 
-                {tracerouteResult && (
+                {pingResult && pingResult.section === 'counter' && (
+                  <div className="p-4 bg-accent/30 rounded-lg text-sm space-y-2">
+                    <div className="font-mono">
+                      <div className="font-semibold text-secondary">Mostrador - {pingResult.type}</div>
+                      <div>Target: {pingResult.target} ({estacion.codigo})</div>
+                      <div className={pingResult.success ? 'text-success' : 'text-destructive'}>
+                        Status: {pingResult.success ? 'SUCCESS' : 'FAILED'}
+                      </div>
+                      {pingResult.error && (
+                        <div className="text-destructive">Error: {pingResult.error}</div>
+                      )}
+                      {pingResult.success && (
+                        <>
+                          <div>Latency: {pingResult.latency}ms</div>
+                          <div>Packet Loss: {pingResult.packetLoss}%</div>
+                        </>
+                      )}
+                      <div className="text-xs text-muted-foreground mt-2">
+                        {new Date(pingResult.timestamp).toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {tracerouteResult && tracerouteResult.section === 'counter' && (
                   <div className="p-4 bg-accent/30 rounded-lg text-sm max-h-64 overflow-y-auto">
                     <div className="font-mono space-y-1">
-                      <div className="font-semibold">Target: {tracerouteResult.target} {tracerouteResult.targetName && `(${tracerouteResult.targetName})`}</div>
+                      <div className="font-semibold text-secondary">Mostrador - {tracerouteResult.type}</div>
+                      <div className="font-semibold">Target: {tracerouteResult.target} ({estacion.codigo})</div>
                       {tracerouteResult.error ? (
                         <div className="text-destructive">Error: {tracerouteResult.error}</div>
                       ) : (

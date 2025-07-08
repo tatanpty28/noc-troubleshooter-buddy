@@ -90,10 +90,10 @@ const Index = () => {
           
           <div className="relative z-10 text-center text-white px-6">
             <h1 className="text-4xl font-bold mb-4 text-primary glow-effect">
-              Bienvenido al NOC
+              Centro de Operaciones
             </h1>
             <p className="text-lg mb-4 text-gray-200">
-              Centro de Operaciones de Red - Tu asistente inteligente
+              Somos 13 Especialistas de Monitoreo
             </p>
             <div className="flex items-center justify-center gap-2 text-secondary">
               <Coffee className="w-5 h-5" />

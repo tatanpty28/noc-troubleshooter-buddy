@@ -19,6 +19,12 @@ export interface Estacion {
   equipos: Equipo[];
   attachments?: string[];
   photo?: string;
+  provider_backoffice?: string;
+  ip_backoffice?: string;
+  ip_publica_backoffice?: string;
+  provider_counter?: string;
+  ip_counter?: string;
+  ip_publica_counter?: string;
   contacto: {
     email: string;
     telefono: string;

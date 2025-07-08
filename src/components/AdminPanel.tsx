@@ -169,6 +169,12 @@ export const AdminPanel = ({ onClose }: AdminPanelProps) => {
       })) || [],
       attachments: [...(estacionFormData.attachments || []), ...attachments],
       photo: photoDataUrl,
+      provider_backoffice: estacionFormData.provider_backoffice,
+      ip_backoffice: estacionFormData.ip_backoffice,
+      ip_publica_backoffice: estacionFormData.ip_publica_backoffice,
+      provider_counter: estacionFormData.provider_counter,
+      ip_counter: estacionFormData.ip_counter,
+      ip_publica_counter: estacionFormData.ip_publica_counter,
       contacto: {
         email: estacionFormData.contacto?.email || "",
         telefono: estacionFormData.contacto?.telefono || ""
@@ -444,6 +450,82 @@ export const AdminPanel = ({ onClose }: AdminPanelProps) => {
           placeholder="192.168.1.100" 
           value={estacionFormData.ip || ''}
           onChange={(e) => setEstacionFormData(prev => ({ ...prev, ip: e.target.value }))}
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="est-provider-backoffice">Proveedor BackOffice</Label>
+        <Select 
+          value={estacionFormData.provider_backoffice || ''} 
+          onValueChange={(value) => setEstacionFormData(prev => ({ ...prev, provider_backoffice: value }))}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Seleccionar proveedor" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Fortinet">Fortinet</SelectItem>
+            <SelectItem value="Cisco">Cisco</SelectItem>
+            <SelectItem value="Otro">Otro</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label htmlFor="est-ip-backoffice">IP Equipo BackOffice*</Label>
+        <Input 
+          id="est-ip-backoffice" 
+          placeholder="192.168.x.x" 
+          value={estacionFormData.ip_backoffice || ''}
+          onChange={(e) => setEstacionFormData(prev => ({ ...prev, ip_backoffice: e.target.value }))}
+          required
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="est-ip-publica-backoffice">IP Pública Proveedor BackOffice</Label>
+        <Input 
+          id="est-ip-publica-backoffice" 
+          placeholder="12.34.56.78" 
+          value={estacionFormData.ip_publica_backoffice || ''}
+          onChange={(e) => setEstacionFormData(prev => ({ ...prev, ip_publica_backoffice: e.target.value }))}
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="est-provider-counter">Proveedor Mostrador</Label>
+        <Select 
+          value={estacionFormData.provider_counter || ''} 
+          onValueChange={(value) => setEstacionFormData(prev => ({ ...prev, provider_counter: value }))}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Seleccionar proveedor" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Proveedor A">Proveedor A</SelectItem>
+            <SelectItem value="Proveedor B">Proveedor B</SelectItem>
+            <SelectItem value="Proveedor C">Proveedor C</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label htmlFor="est-ip-counter">IP Equipo Mostrador*</Label>
+        <Input 
+          id="est-ip-counter" 
+          placeholder="192.168.y.y" 
+          value={estacionFormData.ip_counter || ''}
+          onChange={(e) => setEstacionFormData(prev => ({ ...prev, ip_counter: e.target.value }))}
+          required
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="est-ip-publica-counter">IP Pública Proveedor Mostrador</Label>
+        <Input 
+          id="est-ip-publica-counter" 
+          placeholder="23.45.67.89" 
+          value={estacionFormData.ip_publica_counter || ''}
+          onChange={(e) => setEstacionFormData(prev => ({ ...prev, ip_publica_counter: e.target.value }))}
         />
       </div>
       

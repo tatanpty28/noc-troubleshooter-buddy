@@ -77,6 +77,7 @@ const Index = () => {
           <li><a href="/estaciones" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">📊 Estaciones</a></li>
           <li><a href="/casos" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">⏱ Casos Históricos</a></li>
           <li><a href="/admin" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">⚙️ Admin</a></li>
+          <li><a href="/guides" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">📚 Guías</a></li>
         </ul>
       </header>
 

@@ -4,7 +4,8 @@ import {
   CaseHistory, 
   TroubleshootingProblem,
   ChecklistItem,
-  EscalationInfo 
+  EscalationInfo,
+  Guide 
 } from '@/data/troubleshootingData';
 import { Estacion } from '@/hooks/useEstaciones';
 
@@ -28,6 +29,11 @@ export class NOCDataService {
 
     if (estaciones.length === 0) {
       this.storage.setItem('estaciones', this.getDefaultEstaciones());
+    }
+
+    const guides = this.getGuides();
+    if (guides.length === 0) {
+      this.storage.setItem('guides', this.getDefaultGuides());
     }
   }
 
@@ -140,6 +146,33 @@ export class NOCDataService {
   deleteEstacion(id: string): void {
     const estaciones = this.getEstaciones().filter(est => est.id !== id);
     this.storage.setItem('estaciones', estaciones);
+  }
+
+  // Guides methods
+  getGuides(): Guide[] {
+    return this.storage.getItem('guides', []);
+  }
+
+  saveGuide(guide: Guide): void {
+    const guides = this.getGuides();
+    const existingIndex = guides.findIndex(existing => existing.id === guide.id);
+    
+    if (existingIndex >= 0) {
+      guides[existingIndex] = { ...guide, lastUpdated: new Date().toISOString().split('T')[0] };
+    } else {
+      guides.push({
+        ...guide,
+        dateCreated: new Date().toISOString().split('T')[0],
+        lastUpdated: new Date().toISOString().split('T')[0]
+      });
+    }
+    
+    this.storage.setItem('guides', guides);
+  }
+
+  deleteGuide(id: string): void {
+    const guides = this.getGuides().filter(guide => guide.id !== id);
+    this.storage.setItem('guides', guides);
   }
 
   // Default data
@@ -380,6 +413,23 @@ export class NOCDataService {
           email: 'soporte@bog.aero',
           telefono: '+57-1-266-2000'
         }
+      }
+    ];
+  }
+
+  private getDefaultGuides(): Guide[] {
+    return [
+      {
+        id: "GUIDE001",
+        title: "Los tiempos ETD/ETA no llegan a Shares",
+        content: `1. Ingresar a la ruta \\\\copaair.com\\dfs\\OSB\\1004
+2. Copiar el último archivo recibido y pegarlo en tu PC.
+3. Ábrelo y verifica la última columna; confirma que no haya caracteres mal codificados. ejemplo " Espera de TripulaciÃ³n TÃ©cnica"
+4. Si detectas un carácter especial, solicita a HCC o SOCC que lo corrijan.`,
+        attachments: [],
+        images: [],
+        dateCreated: "2024-01-01",
+        lastUpdated: "2024-01-01"
       }
     ];
   }

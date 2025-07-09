@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Edit2, Eye, Trash2, BookOpen, Settings2 } from "lucide-react";
-import { KnowledgeBase, CaseHistory, ChecklistItem, EscalationInfo } from "@/data/troubleshootingData";
+import { KnowledgeBase, CaseHistory, ChecklistItem, EscalationInfo, Guide } from "@/data/troubleshootingData";
 import { useToast } from "@/hooks/use-toast";
 import { useNOCData } from "@/hooks/useNOCData";
 import { Estacion, Equipo } from "@/hooks/useEstaciones";
@@ -41,19 +41,27 @@ interface EstacionFormData extends Partial<Estacion> {
   photoFile?: File | null;
 }
 
+interface GuideFormData extends Partial<Guide> {
+  attachmentFiles?: FileList | null;
+  imageFiles?: FileList | null;
+}
+
 export const AdminPanel = ({ onClose }: AdminPanelProps) => {
   const { toast } = useToast();
-  const { kbs, cases, estaciones, saveKB, saveCase, saveEstacion, deleteKB, deleteCase, deleteEstacion, userRole, updateUserRole } = useNOCData();
+  const { kbs, cases, estaciones, guides, saveKB, saveCase, saveEstacion, saveGuide, deleteKB, deleteCase, deleteEstacion, deleteGuide, userRole, updateUserRole } = useNOCData();
   const [activeTab, setActiveTab] = useState("kbs");
   const [kbDialogOpen, setKbDialogOpen] = useState(false);
   const [caseDialogOpen, setCaseDialogOpen] = useState(false);
   const [estacionDialogOpen, setEstacionDialogOpen] = useState(false);
+  const [guideDialogOpen, setGuideDialogOpen] = useState(false);
   const [editingKB, setEditingKB] = useState<KnowledgeBase | null>(null);
   const [editingCase, setEditingCase] = useState<CaseHistory | null>(null);
   const [editingEstacion, setEditingEstacion] = useState<Estacion | null>(null);
+  const [editingGuide, setEditingGuide] = useState<Guide | null>(null);
   const [kbFormData, setKbFormData] = useState<KBFormData>({});
   const [caseFormData, setCaseFormData] = useState<CaseFormData>({});
   const [estacionFormData, setEstacionFormData] = useState<EstacionFormData>({});
+  const [guideFormData, setGuideFormData] = useState<GuideFormData>({});
 
   const handleSaveKB = () => {
     if (!kbFormData.id || !kbFormData.title || !kbFormData.description) {
@@ -190,6 +198,60 @@ export const AdminPanel = ({ onClose }: AdminPanelProps) => {
       setEstacionDialogOpen(false);
       setEditingEstacion(null);
       setEstacionFormData({});
+    }
+  };
+
+  const handleSaveGuide = async () => {
+    if (!guideFormData.id || !guideFormData.title || !guideFormData.content) {
+      toast({
+        title: "Error",
+        description: "Por favor completa todos los campos obligatorios.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Handle file uploads
+    const attachments: string[] = [];
+    const images: string[] = [];
+
+    // Process attachments
+    if (guideFormData.attachmentFiles) {
+      for (let i = 0; i < guideFormData.attachmentFiles.length; i++) {
+        const file = guideFormData.attachmentFiles[i];
+        const dataUrl = await fileToDataUrl(file);
+        attachments.push(dataUrl);
+      }
+    }
+
+    // Process images
+    if (guideFormData.imageFiles) {
+      for (let i = 0; i < guideFormData.imageFiles.length; i++) {
+        const file = guideFormData.imageFiles[i];
+        const dataUrl = await fileToDataUrl(file);
+        images.push(dataUrl);
+      }
+    }
+
+    const newGuide: Guide = {
+      id: guideFormData.id,
+      title: guideFormData.title,
+      content: guideFormData.content,
+      attachments: [...(guideFormData.attachments || []), ...attachments],
+      images: [...(guideFormData.images || []), ...images],
+      dateCreated: editingGuide?.dateCreated || new Date().toISOString().split('T')[0],
+      lastUpdated: new Date().toISOString().split('T')[0]
+    };
+
+    const success = saveGuide(newGuide);
+    if (success) {
+      toast({
+        title: "Guía Guardada",
+        description: "La guía ha sido guardada exitosamente.",
+      });
+      setGuideDialogOpen(false);
+      setEditingGuide(null);
+      setGuideFormData({});
     }
   };
 
@@ -582,6 +644,71 @@ export const AdminPanel = ({ onClose }: AdminPanelProps) => {
     </div>
   );
 
+  const GuideForm = () => (
+    <div className="space-y-4">
+      <div>
+        <Label htmlFor="guide-id">ID de la Guía*</Label>
+        <Input 
+          id="guide-id" 
+          placeholder="GUIDE001" 
+          value={guideFormData.id || ''}
+          onChange={(e) => setGuideFormData(prev => ({ ...prev, id: e.target.value }))}
+        />
+      </div>
+      
+      <div>
+        <Label htmlFor="guide-title">Título*</Label>
+        <Input 
+          id="guide-title" 
+          placeholder="Título de la guía" 
+          value={guideFormData.title || ''}
+          onChange={(e) => setGuideFormData(prev => ({ ...prev, title: e.target.value }))}
+        />
+      </div>
+      
+      <div>
+        <Label htmlFor="guide-content">Contenido / Pasos*</Label>
+        <Textarea 
+          id="guide-content" 
+          placeholder="Describe la guía paso a paso" 
+          rows={6}
+          value={guideFormData.content || ''}
+          onChange={(e) => setGuideFormData(prev => ({ ...prev, content: e.target.value }))}
+        />
+      </div>
+      
+      <div>
+        <Label htmlFor="guide-attachments">Adjuntos</Label>
+        <Input 
+          id="guide-attachments" 
+          type="file" 
+          multiple 
+          onChange={(e) => setGuideFormData(prev => ({ ...prev, attachmentFiles: e.target.files }))}
+        />
+      </div>
+      
+      <div>
+        <Label htmlFor="guide-images">Imágenes de Referencia</Label>
+        <Input 
+          id="guide-images" 
+          type="file" 
+          accept="image/*" 
+          multiple 
+          onChange={(e) => setGuideFormData(prev => ({ ...prev, imageFiles: e.target.files }))}
+        />
+      </div>
+      
+      <div className="flex justify-end gap-2">
+        <Button variant="outline" onClick={() => {
+          setGuideDialogOpen(false);
+          setEditingGuide(null);
+          setGuideFormData({});
+        }}>Cancelar</Button>
+        <Button onClick={handleSaveGuide}>Guardar Guía</Button>
+      </div>
+    </div>
+  );
+
   return (
     <Card className="noc-card w-full max-w-6xl mx-auto">
       <CardHeader>
@@ -611,10 +738,11 @@ export const AdminPanel = ({ onClose }: AdminPanelProps) => {
 
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="kbs">Knowledge Bases</TabsTrigger>
             <TabsTrigger value="cases">Casos Históricos</TabsTrigger>
             <TabsTrigger value="estaciones">Estaciones</TabsTrigger>
+            <TabsTrigger value="guides">Guías</TabsTrigger>
           </TabsList>
 
           <TabsContent value="kbs" className="space-y-4">
@@ -839,6 +967,79 @@ export const AdminPanel = ({ onClose }: AdminPanelProps) => {
                             toast({
                               title: "Estación Eliminada",
                               description: "La estación ha sido eliminada.",
+                            });
+                          }
+                        }}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="guides" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-foreground">Gestión de Guías</h3>
+              <Dialog open={guideDialogOpen} onOpenChange={setGuideDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="glow-effect">
+                    <Plus className="w-4 h-4 mr-2" />
+                    📚 Agregar Guía
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {editingGuide ? "Editar Guía" : "Nueva Guía"}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <GuideForm />
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <div className="grid gap-4">
+              {guides.map((guide) => (
+                <Card key={guide.id} className="border border-border">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h4 className="font-semibold text-foreground">{guide.id}: {guide.title}</h4>
+                        </div>
+                        <p className="text-muted-foreground text-sm mb-2 whitespace-pre-line">
+                          {guide.content.length > 150 ? `${guide.content.substring(0, 150)}...` : guide.content}
+                        </p>
+                        <div className="text-xs text-muted-foreground">
+                          Actualizado: {guide.lastUpdated} | Adjuntos: {guide.attachments.length} | Imágenes: {guide.images.length}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline">
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => {
+                          setEditingGuide(guide);
+                          setGuideFormData({
+                            id: guide.id,
+                            title: guide.title,
+                            content: guide.content,
+                            attachments: guide.attachments,
+                            images: guide.images
+                          });
+                          setGuideDialogOpen(true);
+                        }}>
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => {
+                          if (confirm('¿Estás seguro de eliminar esta guía?')) {
+                            deleteGuide(guide.id);
+                            toast({
+                              title: "Guía Eliminada",
+                              description: "La guía ha sido eliminada.",
                             });
                           }
                         }}>

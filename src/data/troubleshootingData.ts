@@ -35,6 +35,16 @@ export interface CaseHistory {
   additionalNotes?: string;
 }
 
+export interface Guide {
+  id: string;
+  title: string;
+  content: string;
+  attachments: string[];
+  images: string[];
+  dateCreated: string;
+  lastUpdated: string;
+}
+
 export interface TroubleshootingProblem {
   id: string;
   title: string;

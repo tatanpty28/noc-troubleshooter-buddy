@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { nocDataService } from '@/services/dataService';
-import { KnowledgeBase, CaseHistory, TroubleshootingProblem } from '@/data/troubleshootingData';
+import { KnowledgeBase, CaseHistory, TroubleshootingProblem, Guide } from '@/data/troubleshootingData';
 import { Estacion } from './useEstaciones';
 
 // Custom hook for NOC data management
@@ -8,6 +8,7 @@ export function useNOCData() {
   const [kbs, setKbs] = useState<KnowledgeBase[]>([]);
   const [cases, setCases] = useState<CaseHistory[]>([]);
   const [estaciones, setEstaciones] = useState<Estacion[]>([]);
+  const [guides, setGuides] = useState<Guide[]>([]);
   const [userRole, setUserRole] = useState<'admin' | 'editor' | 'user'>('user');
   const [isLoading, setIsLoading] = useState(true);
 
@@ -23,6 +24,7 @@ export function useNOCData() {
         setKbs(nocDataService.getKnowledgeBases());
         setCases(nocDataService.getCaseHistory());
         setEstaciones(nocDataService.getEstaciones());
+        setGuides(nocDataService.getGuides());
         setUserRole(nocDataService.getUserRole());
       } catch (error) {
         console.error('Error initializing NOC data:', error);
@@ -113,6 +115,29 @@ export function useNOCData() {
     }
   };
 
+  // Guides methods
+  const saveGuide = (guide: Guide) => {
+    try {
+      nocDataService.saveGuide(guide);
+      setGuides(nocDataService.getGuides());
+      return true;
+    } catch (error) {
+      console.error('Error saving guide:', error);
+      return false;
+    }
+  };
+
+  const deleteGuide = (id: string) => {
+    try {
+      nocDataService.deleteGuide(id);
+      setGuides(nocDataService.getGuides());
+      return true;
+    } catch (error) {
+      console.error('Error deleting guide:', error);
+      return false;
+    }
+  };
+
   // Role management
   const updateUserRole = (role: 'admin' | 'editor' | 'user') => {
     try {
@@ -134,6 +159,7 @@ export function useNOCData() {
     kbs,
     cases,
     estaciones,
+    guides,
     userRole,
     isLoading,
     
@@ -153,6 +179,10 @@ export function useNOCData() {
     saveEstacion,
     deleteEstacion,
     
+    // Guide methods
+    saveGuide,
+    deleteGuide,
+    
     // Search
     searchProblems,
     
@@ -164,6 +194,7 @@ export function useNOCData() {
       setKbs(nocDataService.getKnowledgeBases());
       setCases(nocDataService.getCaseHistory());
       setEstaciones(nocDataService.getEstaciones());
+      setGuides(nocDataService.getGuides());
     }
   };
 }

@@ -15,9 +15,9 @@ const NotFound = () => {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center">
         <h1 className="text-4xl font-bold mb-4 text-foreground">404</h1>
-        <p className="text-xl text-muted-foreground mb-4">¡Ups! Esta página no existe en el NOC</p>
+        <p className="text-xl text-muted-foreground mb-4">¡Ups! Esta página no existe en el Centro de Operaciones</p>
         <a href="/" className="text-primary hover:text-primary/80 underline">
-          Volver al Centro de Operaciones
+          ← Volver al Centro de Operaciones
         </a>
       </div>
     </div>

@@ -2,6 +2,8 @@ import { useState } from "react";
 import { SearchBar } from "@/components/SearchBar";
 import { TroubleshootingCard } from "@/components/TroubleshootingCard";
 import { AdminPanel } from "@/components/AdminPanel";
+import { TeamPanel } from "@/components/TeamPanel";
+import { StatsPanel } from "@/components/StatsPanel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -48,28 +50,34 @@ const Index = () => {
 
   if (selectedProblem) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="mb-6">
-            <Button 
-              onClick={resetToHome}
-              variant="outline"
-              className="mb-4"
-            >
-              ← Volver al inicio
-            </Button>
+      <div className="min-h-screen bg-background flex">
+        <TeamPanel />
+        <div className="flex-1 p-6">
+          <div className="max-w-4xl mx-auto">
+            <div className="mb-6">
+              <Button 
+                onClick={resetToHome}
+                variant="outline"
+                className="mb-4"
+              >
+                ← Volver al inicio
+              </Button>
+            </div>
+            <TroubleshootingCard
+              problem={selectedProblem}
+              onComplete={handleProblemComplete}
+            />
           </div>
-          <TroubleshootingCard
-            problem={selectedProblem}
-            onComplete={handleProblemComplete}
-          />
         </div>
+        <StatsPanel />
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-background flex">
+      <TeamPanel />
+      <div className="flex-1 max-w-4xl mx-auto">
       {/* Top Navigation */}
       <header className="top-nav mb-8">
         <ul className="menu-list flex items-center justify-center gap-8 py-4 border-b border-border">
@@ -244,6 +252,8 @@ const Index = () => {
           </Card>
         )}
       </div>
+      </div>
+      <StatsPanel />
     </div>
   );
 };

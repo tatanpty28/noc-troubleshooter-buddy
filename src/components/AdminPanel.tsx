@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Edit2, Eye, Trash2, BookOpen, Settings2 } from "lucide-react";
-import { KnowledgeBase, CaseHistory, ChecklistItem, EscalationInfo, Guide } from "@/data/troubleshootingData";
+import { KnowledgeBase, CaseHistory, ChecklistItem, EscalationInfo, Guide, GuideAttachment, GuideImage } from "@/data/troubleshootingData";
 import { useToast } from "@/hooks/use-toast";
 import { useNOCData } from "@/hooks/useNOCData";
 import { Estacion, Equipo } from "@/hooks/useEstaciones";
@@ -212,15 +212,19 @@ export const AdminPanel = ({ onClose }: AdminPanelProps) => {
     }
 
     // Handle file uploads
-    const attachments: string[] = [];
-    const images: string[] = [];
+    const attachments: GuideAttachment[] = [];
+    const images: GuideImage[] = [];
 
     // Process attachments
     if (guideFormData.attachmentFiles) {
       for (let i = 0; i < guideFormData.attachmentFiles.length; i++) {
         const file = guideFormData.attachmentFiles[i];
         const dataUrl = await fileToDataUrl(file);
-        attachments.push(dataUrl);
+        attachments.push({
+          name: file.name,
+          url: dataUrl,
+          size: file.size
+        });
       }
     }
 
@@ -229,7 +233,10 @@ export const AdminPanel = ({ onClose }: AdminPanelProps) => {
       for (let i = 0; i < guideFormData.imageFiles.length; i++) {
         const file = guideFormData.imageFiles[i];
         const dataUrl = await fileToDataUrl(file);
-        images.push(dataUrl);
+        images.push({
+          name: file.name,
+          url: dataUrl
+        });
       }
     }
 

@@ -116,6 +116,15 @@ export function useNOCData() {
   };
 
   // Guides methods
+  const getGuide = (id: string): Guide | null => {
+    try {
+      return nocDataService.getGuide(id);
+    } catch (error) {
+      console.error('Error getting guide:', error);
+      return null;
+    }
+  };
+
   const saveGuide = (guide: Guide) => {
     try {
       nocDataService.saveGuide(guide);
@@ -135,6 +144,15 @@ export function useNOCData() {
     } catch (error) {
       console.error('Error deleting guide:', error);
       return false;
+    }
+  };
+
+  const searchGuides = (query: string): Guide[] => {
+    try {
+      return nocDataService.searchGuides(query);
+    } catch (error) {
+      console.error('Error searching guides:', error);
+      return [];
     }
   };
 
@@ -180,8 +198,10 @@ export function useNOCData() {
     deleteEstacion,
     
     // Guide methods
+    getGuide,
     saveGuide,
     deleteGuide,
+    searchGuides,
     
     // Search
     searchProblems,

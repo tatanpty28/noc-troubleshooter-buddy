@@ -35,12 +35,23 @@ export interface CaseHistory {
   additionalNotes?: string;
 }
 
+export interface GuideAttachment {
+  name: string;
+  url: string;
+  size?: number;
+}
+
+export interface GuideImage {
+  name: string;
+  url: string;
+}
+
 export interface Guide {
   id: string;
   title: string;
   content: string;
-  attachments: string[];
-  images: string[];
+  attachments: GuideAttachment[];
+  images: GuideImage[];
   dateCreated: string;
   lastUpdated: string;
 }

@@ -153,6 +153,11 @@ export class NOCDataService {
     return this.storage.getItem('guides', []);
   }
 
+  getGuide(id: string): Guide | null {
+    const guides = this.getGuides();
+    return guides.find(guide => guide.id === id) || null;
+  }
+
   saveGuide(guide: Guide): void {
     const guides = this.getGuides();
     const existingIndex = guides.findIndex(existing => existing.id === guide.id);
@@ -173,6 +178,16 @@ export class NOCDataService {
   deleteGuide(id: string): void {
     const guides = this.getGuides().filter(guide => guide.id !== id);
     this.storage.setItem('guides', guides);
+  }
+
+  searchGuides(query: string): Guide[] {
+    const guides = this.getGuides();
+    const lowerQuery = query.toLowerCase();
+    
+    return guides.filter(guide => 
+      guide.title.toLowerCase().includes(lowerQuery) ||
+      guide.content.toLowerCase().includes(lowerQuery)
+    );
   }
 
   // Default data
@@ -426,10 +441,85 @@ export class NOCDataService {
 2. Copiar el último archivo recibido y pegarlo en tu PC.
 3. Ábrelo y verifica la última columna; confirma que no haya caracteres mal codificados. ejemplo " Espera de TripulaciÃ³n TÃ©cnica"
 4. Si detectas un carácter especial, solicita a HCC o SOCC que lo corrijan.`,
-        attachments: [],
-        images: [],
+        attachments: [
+          {
+            name: "ejemplo_log_etd_eta.txt",
+            url: "#",
+            size: 1024
+          }
+        ],
+        images: [
+          {
+            name: "captura_caracteres_especiales.png",
+            url: "#"
+          }
+        ],
         dateCreated: "2024-01-01",
         lastUpdated: "2024-01-01"
+      },
+      {
+        id: "GUIDE002",
+        title: "Manual de Configuración de Red",
+        content: `1. Acceder al router principal mediante SSH
+2. Verificar la configuración actual con 'show running-config'
+3. Realizar backup de la configuración:
+   - copy running-config startup-config
+   - copy running-config tftp://192.168.1.100/backup.cfg
+4. Aplicar nueva configuración según template
+5. Verificar conectividad después de cambios`,
+        attachments: [
+          {
+            name: "router_config_template.cfg",
+            url: "#",
+            size: 2048
+          }
+        ],
+        images: [
+          {
+            name: "diagrama_red.png",
+            url: "#"
+          },
+          {
+            name: "captura_ssh_router.png",
+            url: "#"
+          }
+        ],
+        dateCreated: "2024-01-15",
+        lastUpdated: "2024-01-15"
+      },
+      {
+        id: "GUIDE003",
+        title: "Procedimientos de Escalamiento",
+        content: `NIVELES DE ESCALAMIENTO:
+
+Nivel 1 - NOC (0-30 minutos):
+• Verificar equipos básicos
+• Reiniciar servicios estándar
+• Consultar KB conocida
+
+Nivel 2 - Especialista (30-60 minutos):
+• Análisis técnico profundo
+• Contacto con proveedores
+• Implementar soluciones temporales
+
+Nivel 3 - Gerencia/Vendedor (60+ minutos):
+• Incidentes críticos
+• Impacto a múltiples servicios
+• Decisiones de negocio
+
+CONTACTOS:
+• NOC Senior: ext. 1001
+• Especialista Red: ext. 1002  
+• Gerente IT: ext. 1003`,
+        attachments: [],
+        images: [
+          {
+            name: "flowchart_escalamiento.png", 
+            url: "#"
+          }
+        ],
+        dateCreated: "2024-01-10",
+        lastUpdated: "2024-01-10"
       }
     ];
   }

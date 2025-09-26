@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useEstaciones, Estacion } from "@/hooks/useEstaciones";
 import { SearchBar } from "@/components/SearchBar";
 import { EstacionCard } from "@/components/EstacionCard";
 import { EstacionDetail } from "@/components/EstacionDetail";
+import { EstacionFilters, FilterOptions } from "@/components/EstacionFilters";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,17 +15,91 @@ export default function Estaciones() {
   const [filteredEstaciones, setFilteredEstaciones] = useState<Estacion[]>([]);
   const [selectedEstacion, setSelectedEstacion] = useState<Estacion | null>(null);
   const [showResults, setShowResults] = useState(false);
+  const [filters, setFilters] = useState<FilterOptions>({ proveedor: "", area: "" });
+
+  // Obtener proveedores únicos de todas las estaciones
+  const availableProviders = useMemo(() => {
+    const providers = new Set<string>();
+    estaciones.forEach(estacion => {
+      estacion.proveedores.forEach(p => providers.add(p));
+      if (estacion.provider_backoffice) providers.add(estacion.provider_backoffice);
+      if (estacion.provider_counter) providers.add(estacion.provider_counter);
+    });
+    return Array.from(providers).sort();
+  }, [estaciones]);
+
+  // Función para filtrar estaciones basado en filtros y búsqueda
+  const getFilteredStations = () => {
+    let result = estaciones;
+
+    // Aplicar filtros de proveedor y área
+    if (filters.proveedor || filters.area) {
+      result = result.filter(estacion => {
+        let matchesProvider = true;
+        let matchesArea = true;
+
+        // Filtro por proveedor
+        if (filters.proveedor) {
+          const hasProviderInGeneral = estacion.proveedores.includes(filters.proveedor);
+          const hasProviderInBackoffice = estacion.provider_backoffice === filters.proveedor;
+          const hasProviderInCounter = estacion.provider_counter === filters.proveedor;
+          
+          matchesProvider = hasProviderInGeneral || hasProviderInBackoffice || hasProviderInCounter;
+
+          // Si también hay filtro de área, ser más específico
+          if (filters.area && filters.area !== "ambos") {
+            if (filters.area === "backoffice") {
+              matchesProvider = hasProviderInBackoffice;
+            } else if (filters.area === "mostradores") {
+              matchesProvider = hasProviderInCounter;
+            }
+          }
+        }
+
+        // Filtro por área (solo si no hay proveedor específico)
+        if (filters.area && !filters.proveedor) {
+          if (filters.area === "backoffice") {
+            matchesArea = !!estacion.provider_backoffice;
+          } else if (filters.area === "mostradores") {
+            matchesArea = !!estacion.provider_counter;
+          } else if (filters.area === "ambos") {
+            matchesArea = !!estacion.provider_backoffice && !!estacion.provider_counter;
+          }
+        }
+
+        return matchesProvider && matchesArea;
+      });
+    }
+
+    // Aplicar búsqueda de texto
+    if (searchQuery.trim()) {
+      const lowerQuery = searchQuery.toLowerCase();
+      result = result.filter(estacion => 
+        estacion.codigo.toLowerCase().includes(lowerQuery) ||
+        estacion.nombre.toLowerCase().includes(lowerQuery) ||
+        estacion.ubicacion.toLowerCase().includes(lowerQuery) ||
+        estacion.proveedores.some(proveedor => 
+          proveedor.toLowerCase().includes(lowerQuery)
+        ) ||
+        estacion.provider_backoffice?.toLowerCase().includes(lowerQuery) ||
+        estacion.provider_counter?.toLowerCase().includes(lowerQuery)
+      );
+    }
+
+    return result;
+  };
+
+  const filteredResults = getFilteredStations();
+  const hasActiveFilters = filters.proveedor || filters.area || searchQuery.trim();
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    if (query.trim()) {
-      const results = buscarEstaciones(query);
-      setFilteredEstaciones(results);
-      setShowResults(true);
-    } else {
-      setFilteredEstaciones([]);
-      setShowResults(false);
-    }
+    setShowResults(query.trim() !== "" || filters.proveedor !== "" || filters.area !== "");
+  };
+
+  const handleFilterChange = (newFilters: FilterOptions) => {
+    setFilters(newFilters);
+    setShowResults(newFilters.proveedor !== "" || newFilters.area !== "" || searchQuery.trim() !== "");
   };
 
   const handleSelectEstacion = (estacion: Estacion) => {
@@ -35,9 +110,9 @@ export default function Estaciones() {
     setSelectedEstacion(null);
   };
 
-  const resetSearch = () => {
+  const resetAll = () => {
     setSearchQuery("");
-    setFilteredEstaciones([]);
+    setFilters({ proveedor: "", area: "" });
     setShowResults(false);
   };
 
@@ -95,19 +170,25 @@ export default function Estaciones() {
         </p>
       </div>
 
+      {/* Filtros */}
+      <EstacionFilters 
+        onFilterChange={handleFilterChange}
+        availableProviders={availableProviders}
+      />
+
       {/* Búsqueda */}
       <div className="mb-8">
         <div className="relative">
           <Input
             type="text"
-            placeholder="Buscar por código (YUL), nombre o proveedor..."
+            placeholder="Buscar por código (YUL), nombre, ubicación o proveedor..."
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
             className="pl-4 pr-10 h-12 text-lg"
           />
           {searchQuery && (
             <Button
-              onClick={resetSearch}
+              onClick={() => handleSearch("")}
               variant="ghost"
               size="sm"
               className="absolute right-2 top-2"
@@ -119,7 +200,7 @@ export default function Estaciones() {
       </div>
 
       {/* Estadísticas rápidas */}
-      {!showResults && (
+      {!hasActiveFilters && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card className="noc-card">
             <CardContent className="p-6 text-center">
@@ -149,21 +230,28 @@ export default function Estaciones() {
         </div>
       )}
 
-      {/* Resultados de búsqueda */}
-      {showResults && (
+      {/* Resultados de búsqueda/filtros */}
+      {hasActiveFilters && (
         <div className="mb-6">
           <h2 className="text-xl font-semibold text-foreground mb-4">
-            {filteredEstaciones.length === 0 
+            {filteredResults.length === 0 
               ? "No se encontraron estaciones" 
-              : `${filteredEstaciones.length} estación${filteredEstaciones.length !== 1 ? 'es' : ''} encontrada${filteredEstaciones.length !== 1 ? 's' : ''}`
+              : `${filteredResults.length} estación${filteredResults.length !== 1 ? 'es' : ''} encontrada${filteredResults.length !== 1 ? 's' : ''}`
             }
           </h2>
+          {filters.proveedor && filters.area && (
+            <p className="text-muted-foreground text-sm mb-2">
+              Mostrando estaciones de <strong>{filters.proveedor}</strong> en <strong>
+                {filters.area === "backoffice" ? "Back Office" : filters.area === "mostradores" ? "Mostradores" : "Ambas áreas"}
+              </strong>
+            </p>
+          )}
         </div>
       )}
 
       {/* Lista de estaciones */}
       <div className="space-y-4">
-        {(showResults ? filteredEstaciones : estaciones).map((estacion) => (
+        {(hasActiveFilters ? filteredResults : estaciones).map((estacion) => (
           <EstacionCard
             key={estacion.id}
             estacion={estacion}
@@ -173,7 +261,7 @@ export default function Estaciones() {
       </div>
 
       {/* Mensaje cuando no hay resultados */}
-      {showResults && filteredEstaciones.length === 0 && (
+      {hasActiveFilters && filteredResults.length === 0 && (
         <Card className="noc-card">
           <CardContent className="p-8 text-center">
             <Factory className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
@@ -181,17 +269,17 @@ export default function Estaciones() {
               No se encontraron estaciones
             </h3>
             <p className="text-muted-foreground mb-4">
-              Intenta con otros términos de búsqueda como código de estación, nombre o proveedor.
+              Intenta ajustar los filtros o términos de búsqueda. Busca por código de estación, nombre, ubicación o proveedor.
             </p>
-            <Button onClick={resetSearch} variant="outline">
-              Ver todas las estaciones
+            <Button onClick={resetAll} variant="outline">
+              Limpiar filtros y búsqueda
             </Button>
           </CardContent>
         </Card>
       )}
 
       {/* Mensaje cuando no hay estaciones */}
-      {!showResults && estaciones.length === 0 && (
+      {!hasActiveFilters && estaciones.length === 0 && (
         <Card className="noc-card">
           <CardContent className="p-8 text-center">
             <Factory className="w-16 h-16 text-muted-foreground mx-auto mb-4" />

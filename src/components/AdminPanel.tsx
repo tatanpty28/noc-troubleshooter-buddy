@@ -503,13 +503,16 @@ export const AdminPanel = ({ onClose }: AdminPanelProps) => {
       </div>
       
       <div>
-        <Label htmlFor="est-proveedores">Proveedores (separados por comas)</Label>
+        <Label htmlFor="est-proveedores">Proveedores Generales (separados por comas)</Label>
         <Input 
           id="est-proveedores" 
           placeholder="Cirion, Tigo, Claro" 
           value={estacionFormData.proveedoresText || ''}
           onChange={(e) => setEstacionFormData(prev => ({ ...prev, proveedoresText: e.target.value }))}
         />
+        <p className="text-xs text-muted-foreground mt-1">
+          Lista general de proveedores disponibles en la estación
+        </p>
       </div>
       
       <div>
@@ -522,36 +525,50 @@ export const AdminPanel = ({ onClose }: AdminPanelProps) => {
         />
       </div>
 
+      {/* Separador visual para proveedores específicos */}
+      <div className="border-t border-border pt-4">
+        <h3 className="text-lg font-medium text-foreground mb-3">Proveedores por Área de Servicio</h3>
+        <p className="text-sm text-muted-foreground mb-4">
+          Define los proveedores específicos para cada área (Back Office y Mostradores) para permitir filtros precisos.
+        </p>
+      </div>
+
       <div>
-        <Label htmlFor="est-provider-backoffice">Proveedor BackOffice</Label>
+        <Label htmlFor="est-provider-backoffice">Proveedor Back Office</Label>
         <Select 
           value={estacionFormData.provider_backoffice || ''} 
           onValueChange={(value) => setEstacionFormData(prev => ({ ...prev, provider_backoffice: value }))}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Seleccionar proveedor" />
+            <SelectValue placeholder="Seleccionar proveedor para Back Office" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Fortinet">Fortinet</SelectItem>
-            <SelectItem value="Cisco">Cisco</SelectItem>
+            <SelectItem value="SITA">SITA</SelectItem>
+            <SelectItem value="TIGO">TIGO</SelectItem>
+            <SelectItem value="CLARO">CLARO</SelectItem>
+            <SelectItem value="CIRION">CIRION</SelectItem>
+            <SelectItem value="Bell Canada">Bell Canada</SelectItem>
+            <SelectItem value="ETB">ETB</SelectItem>
+            <SelectItem value="Telefónica">Telefónica</SelectItem>
+            <SelectItem value="Claro Perú">Claro Perú</SelectItem>
+            <SelectItem value="Entel">Entel</SelectItem>
             <SelectItem value="Otro">Otro</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div>
-        <Label htmlFor="est-ip-backoffice">IP Equipo BackOffice*</Label>
+        <Label htmlFor="est-ip-backoffice">IP Equipo Back Office</Label>
         <Input 
           id="est-ip-backoffice" 
           placeholder="192.168.x.x" 
           value={estacionFormData.ip_backoffice || ''}
           onChange={(e) => setEstacionFormData(prev => ({ ...prev, ip_backoffice: e.target.value }))}
-          required
         />
       </div>
 
       <div>
-        <Label htmlFor="est-ip-publica-backoffice">IP Pública Proveedor BackOffice</Label>
+        <Label htmlFor="est-ip-publica-backoffice">IP Pública Proveedor Back Office</Label>
         <Input 
           id="est-ip-publica-backoffice" 
           placeholder="12.34.56.78" 
@@ -561,35 +578,41 @@ export const AdminPanel = ({ onClose }: AdminPanelProps) => {
       </div>
 
       <div>
-        <Label htmlFor="est-provider-counter">Proveedor Mostrador</Label>
+        <Label htmlFor="est-provider-counter">Proveedor Mostradores</Label>
         <Select 
           value={estacionFormData.provider_counter || ''} 
           onValueChange={(value) => setEstacionFormData(prev => ({ ...prev, provider_counter: value }))}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Seleccionar proveedor" />
+            <SelectValue placeholder="Seleccionar proveedor para Mostradores" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Proveedor A">Proveedor A</SelectItem>
-            <SelectItem value="Proveedor B">Proveedor B</SelectItem>
-            <SelectItem value="Proveedor C">Proveedor C</SelectItem>
+            <SelectItem value="SITA">SITA</SelectItem>
+            <SelectItem value="TIGO">TIGO</SelectItem>
+            <SelectItem value="CLARO">CLARO</SelectItem>
+            <SelectItem value="CIRION">CIRION</SelectItem>
+            <SelectItem value="Bell Canada">Bell Canada</SelectItem>
+            <SelectItem value="ETB">ETB</SelectItem>
+            <SelectItem value="Telefónica">Telefónica</SelectItem>
+            <SelectItem value="Claro Perú">Claro Perú</SelectItem>
+            <SelectItem value="Entel">Entel</SelectItem>
+            <SelectItem value="Otro">Otro</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div>
-        <Label htmlFor="est-ip-counter">IP Equipo Mostrador*</Label>
+        <Label htmlFor="est-ip-counter">IP Equipo Mostradores</Label>
         <Input 
           id="est-ip-counter" 
           placeholder="192.168.y.y" 
           value={estacionFormData.ip_counter || ''}
           onChange={(e) => setEstacionFormData(prev => ({ ...prev, ip_counter: e.target.value }))}
-          required
         />
       </div>
 
       <div>
-        <Label htmlFor="est-ip-publica-counter">IP Pública Proveedor Mostrador</Label>
+        <Label htmlFor="est-ip-publica-counter">IP Pública Proveedor Mostradores</Label>
         <Input 
           id="est-ip-publica-counter" 
           placeholder="23.45.67.89" 
